@@ -1,0 +1,10 @@
+export const EXTENSION_ID = 'mitraHelix';
+export const VIEW_ID = 'mitraHelix.chatView';
+export const COMMAND_NEW_CHAT = 'mitraHelix.newChat';
+export const COMMAND_FOCUS_CHAT = 'mitraHelix.focusChat';
+export const OUTPUT_CHANNEL_NAME = 'MitraHelix';
+export const MAX_ITERATIONS = 25;
+export const MAX_FILE_SIZE = 100_000;
+export const MAX_COMMAND_OUTPUT = 50_000;
+export const MAX_SEARCH_RESULTS = 100;
+export const DEFAULT_COMMAND_TIMEOUT = 60_000;

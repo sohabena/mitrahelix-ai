@@ -1,0 +1,14 @@
+src/
+webview-ui/src/
+webview-ui/node_modules/
+webview-ui/package.json
+webview-ui/tsconfig.json
+webview-ui/vite.config.ts
+webview-ui/tailwind.config.ts
+webview-ui/postcss.config.js
+webview-ui/index.html
+node_modules/
+.gitignore
+tsconfig.json
+esbuild.mjs
+**/*.map

@@ -1,0 +1,170 @@
+{
+  "name": "mitra-helix",
+  "displayName": "MitraHelix AI Agent",
+  "description": "AI-agentic coding assistant for VS Code — read/write files, run commands, search code, all with human-in-the-loop safety",
+  "version": "0.1.0",
+  "publisher": "mitra-helix",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages",
+    "Chat"
+  ],
+  "activationEvents": [
+    "onView:mitraHelix.chatView",
+    "onCommand:mitraHelix.openPanel"
+  ],
+  "main": "./out/extension.js",
+  "icon": "resources/icon.png",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mitraHelixPanel",
+          "title": "MitraHelix",
+          "icon": "resources/sidebar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "mitraHelixPanel": [
+        {
+          "type": "webview",
+          "id": "mitraHelix.chatView",
+          "name": "MitraHelix Chat"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "mitraHelix.newChat",
+        "title": "MitraHelix: New Chat"
+      },
+      {
+        "command": "mitraHelix.focusChat",
+        "title": "MitraHelix: Focus Chat Input"
+      },
+      {
+        "command": "mitraHelix.openPanel",
+        "title": "MitraHelix: Open Chat Panel (Right Side)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "mitraHelix.focusChat",
+        "key": "ctrl+shift+i",
+        "mac": "cmd+shift+i"
+      },
+      {
+        "command": "mitraHelix.openPanel",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l"
+      }
+    ],
+    "configuration": {
+      "title": "MitraHelix AI Agent",
+      "properties": {
+        "mitraHelix.provider": {
+          "type": "string",
+          "enum": [
+            "anthropic",
+            "openai",
+            "google",
+            "deepseek",
+            "openrouter",
+            "ollama"
+          ],
+          "default": "anthropic",
+          "description": "LLM provider to use"
+        },
+        "mitraHelix.anthropicApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your Anthropic API key"
+        },
+        "mitraHelix.openaiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your OpenAI API key"
+        },
+        "mitraHelix.openrouterApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your OpenRouter API key"
+        },
+        "mitraHelix.googleApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your Google Gemini API key"
+        },
+        "mitraHelix.deepseekApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your DeepSeek API key"
+        },
+        "mitraHelix.ollamaBaseUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama server base URL"
+        },
+        "mitraHelix.model": {
+          "type": "string",
+          "default": "claude-sonnet-4-6",
+          "description": "Model ID to use"
+        },
+        "mitraHelix.maxTokens": {
+          "type": "number",
+          "default": 8192,
+          "description": "Maximum tokens per LLM response"
+        },
+        "mitraHelix.maxBudgetPerTask": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Maximum cost in USD per task"
+        },
+        "mitraHelix.autoApproveReads": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-approve read operations (read_file, list_files, search_files)"
+        },
+        "mitraHelix.autoApproveWrites": {
+          "type": "boolean",
+          "default": false,
+          "description": "Auto-approve file write operations"
+        },
+        "mitraHelix.autoApproveCommands": {
+          "type": "array",
+          "default": [],
+          "description": "Commands to auto-approve (e.g., ['ls', 'cat', 'echo'])"
+        },
+        "mitraHelix.contextWindowSize": {
+          "type": "number",
+          "default": 100000,
+          "description": "Maximum context window size in tokens"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "npm run build:webview && node esbuild.mjs --production",
+    "build:webview": "cd webview-ui && npm run build",
+    "watch": "node esbuild.mjs --watch",
+    "compile": "tsc --noEmit",
+    "package": "npx @vscode/vsce package",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.19.11",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.0",
+    "openai": "^4.70.0"
+  }
+}
