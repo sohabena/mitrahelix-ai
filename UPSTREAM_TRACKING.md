@@ -88,6 +88,7 @@ All changes below are **Tier 1 rebrand only** -- user-facing display strings "Cl
 | File | Change Description |
 |------|--------------------|
 | `webview-ui/index.html` | Page title |
+| `webview-ui/src/context/ExtensionStateContext.tsx` | Bypassed Cline welcome/onboarding/login screen -- users go straight to chat and configure API keys in settings |
 
 ### Webview UI - Chat Components
 
