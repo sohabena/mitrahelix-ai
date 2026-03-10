@@ -1,5 +1,11 @@
 # Changelog
 
+## MitraHelix (based on Cline v3.71.0)
+
+- Rebranded from Cline to MitraHelix
+- All existing Cline features preserved
+- See UPSTREAM_TRACKING.md for differences from upstream
+
 ## [3.71.0]
 
 ### Added
