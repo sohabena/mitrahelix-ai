@@ -50,11 +50,12 @@ git commit -m "merge: sync with upstream Cline <commit-hash>"
 
 All changes below are **Tier 1 rebrand only** -- user-facing display strings "Cline" replaced with "MitraHelix". No internal identifiers, file names, command IDs, or code logic was changed.
 
-### Extension Manifest
+### Extension Manifest and Registry
 
 | File | Change Description |
 |------|--------------------|
 | `package.json` | name, displayName, publisher, author, description, repository, keywords, command categories/titles, walkthrough text, activity bar title, configuration title |
+| `src/registry.ts` | Added `mitra-helix` to prefix/viewPrefix mapping so command IDs (`cline.*`) and view IDs (`claude-dev.*`) resolve correctly with the new package name |
 
 ### Documentation
 
