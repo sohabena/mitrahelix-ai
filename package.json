@@ -1,7 +1,7 @@
 {
 	"name": "mitra-helix",
-	"displayName": "MitraHelix",
-	"description": "AI-powered autonomous coding agent by MitraHelix. Create/edit files, run commands, use the browser, and more with your permission every step of the way.",
+	"displayName": "Mitra Helix AI",
+	"description": "MitraH - AI-powered autonomous coding agent by Mitra Helix AI. Create/edit files, run commands, use the browser, and more with your permission every step of the way.",
 	"version": "3.71.0",
 	"icon": "assets/icons/icon.png",
 	"workspaces": [
@@ -12,7 +12,7 @@
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "MitraHelix"
+		"name": "Mitra Helix AI"
 	},
 	"license": "Apache-2.0",
 	"publisher": "sohabena",
@@ -29,7 +29,8 @@
 		"Testing"
 	],
 	"keywords": [
-		"mitrahelix",
+		"mitrah",
+		"mitra-helix-ai",
 		"ai",
 		"coding-agent",
 		"autonomous",
@@ -60,21 +61,21 @@
 		"walkthroughs": [
 			{
 				"id": "ClineWalkthrough",
-				"title": "Meet MitraHelix, your new coding partner",
-				"description": "MitraHelix codes like a developer because it thinks like one. Here are 5 ways to put it to work:",
+				"title": "Meet MitraH, your new coding partner",
+				"description": "MitraH codes like a developer because it thinks like one. Here are 5 ways to put it to work:",
 				"steps": [
 					{
 						"id": "welcome",
 						"title": "Start with a Goal, Not Just a Prompt",
-						"description": "Tell MitraHelix what you want to achieve. It plans, asks, and then codes, like a true partner.",
+						"description": "Tell MitraH what you want to achieve. It plans, asks, and then codes, like a true partner.",
 						"media": {
 							"markdown": "walkthrough/step1.md"
 						}
 					},
 					{
 						"id": "learn",
-						"title": "Let MitraHelix Learn Your Codebase",
-						"description": "Point MitraHelix to your project. It builds understanding to make smart, context-aware changes.",
+						"title": "Let MitraH Learn Your Codebase",
+						"description": "Point MitraH to your project. It builds understanding to make smart, context-aware changes.",
 						"media": {
 							"markdown": "walkthrough/step2.md"
 						}
@@ -82,7 +83,7 @@
 					{
 						"id": "advanced-features",
 						"title": "Always Use the Best AI Models",
-						"description": "MitraHelix empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
+						"description": "MitraH empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
 						"media": {
 							"markdown": "walkthrough/step3.md"
 						}
@@ -98,7 +99,7 @@
 					{
 						"id": "getting-started",
 						"title": "You're Always in Control",
-						"description": "Review MitraHelix's plans and diffs. Approve changes before they happen. No surprises.",
+						"description": "Review MitraH's plans and diffs. Approve changes before they happen. No surprises.",
 						"media": {
 							"markdown": "walkthrough/step5.md"
 						},
@@ -113,7 +114,7 @@
 			"activitybar": [
 				{
 					"id": "claude-dev-ActivityBar",
-					"title": "MitraHelix",
+					"title": "Mitra Helix AI",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
@@ -157,90 +158,90 @@
 			{
 				"command": "cline.dev.createTestTasks",
 				"title": "Create Test Tasks",
-				"category": "MitraHelix",
+				"category": "MitraH",
 				"when": "cline.isDevMode"
 			},
 			{
 				"command": "cline.dev.expireMcpOAuthTokens",
 				"title": "Expire MCP OAuth Tokens (for testing)",
-				"category": "MitraHelix",
+				"category": "MitraH",
 				"when": "cline.isDevMode"
 			},
 			{
 				"command": "cline.addToChat",
-				"title": "Add to MitraHelix",
-				"category": "MitraHelix"
+				"title": "Add to MitraH",
+				"category": "MitraH"
 			},
 			{
 				"command": "cline.addTerminalOutputToChat",
-				"title": "Add to MitraHelix",
-				"category": "MitraHelix"
+				"title": "Add to MitraH",
+				"category": "MitraH"
 			},
 			{
 				"command": "cline.focusChatInput",
 				"title": "Jump to Chat Input",
-				"category": "MitraHelix"
+				"category": "MitraH"
 			},
 			{
 				"command": "cline.generateGitCommitMessage",
-				"title": "Generate Commit Message with MitraHelix",
-				"category": "MitraHelix",
+				"title": "Generate Commit Message with MitraH",
+				"category": "MitraH",
 				"icon": "$(cline-icon)"
 			},
 			{
 				"command": "cline.abortGitCommitMessage",
-				"title": "Generate Commit Message with MitraHelix - Stop",
-				"category": "MitraHelix",
+				"title": "Generate Commit Message with MitraH - Stop",
+				"category": "MitraH",
 				"icon": "$(debug-stop)"
 			},
 			{
 				"command": "cline.explainCode",
-				"title": "Explain with MitraHelix",
-				"category": "MitraHelix"
+				"title": "Explain with MitraH",
+				"category": "MitraH"
 			},
 			{
 				"command": "cline.improveCode",
-				"title": "Improve with MitraHelix",
-				"category": "MitraHelix"
+				"title": "Improve with MitraH",
+				"category": "MitraH"
 			},
 			{
 				"command": "cline.jupyterGenerateCell",
-				"title": "Generate Jupyter Cell with MitraHelix",
-				"category": "MitraHelix",
+				"title": "Generate Jupyter Cell with MitraH",
+				"category": "MitraH",
 				"icon": "$(sparkle)"
 			},
 			{
 				"command": "cline.jupyterExplainCell",
-				"title": "Explain Jupyter Cell with MitraHelix",
-				"category": "MitraHelix",
+				"title": "Explain Jupyter Cell with MitraH",
+				"category": "MitraH",
 				"icon": "$(question)"
 			},
 			{
 				"command": "cline.jupyterImproveCell",
-				"title": "Improve Jupyter Cell with MitraHelix",
-				"category": "MitraHelix",
+				"title": "Improve Jupyter Cell with MitraH",
+				"category": "MitraH",
 				"icon": "$(lightbulb)"
 			},
 			{
 				"command": "cline.openWalkthrough",
 				"title": "Open Walkthrough",
-				"category": "MitraHelix"
+				"category": "MitraH"
 			},
 			{
 				"command": "cline.reconstructTaskHistory",
 				"title": "Reconstruct Task History",
-				"category": "MitraHelix"
+				"category": "MitraH"
 			},
 			{
 				"command": "cline.reviewComment.reply",
 				"title": "Reply",
-				"category": "MitraHelix",
+				"category": "MitraH",
 				"enablement": "!commentIsEmpty"
 			},
 			{
 				"command": "cline.reviewComment.addToChat",
-				"title": "Add to MitraHelix Chat",
-				"category": "MitraHelix",
+				"title": "Add to MitraH Chat",
+				"category": "MitraH",
 				"icon": "$(link-external)"
 			}
 		],
@@ -373,7 +374,7 @@
 			]
 		},
 		"configuration": {
-			"title": "MitraHelix",
+			"title": "Mitra Helix AI",
 			"properties": {}
 		}
 	},

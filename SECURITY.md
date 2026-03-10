@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We actively patch only the most recent minor release of MitraHelix. Older versions receive fixes at our discretion.
+We actively patch only the most recent minor release of Mitra Helix AI. Older versions receive fixes at our discretion.
 
 ## Reporting a Vulnerability
 
@@ -24,4 +24,4 @@ We acknowledge reports within 48 hours and aim to release a fix or mitigation wi
 
 If you do not receive an acknowledgement of your report within 5 business days, you may send an email to security@cline.bot.
 
-Thank you for helping us keep MitraHelix users safe.
+Thank you for helping us keep Mitra Helix AI users safe.

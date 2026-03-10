@@ -1,7 +1,7 @@
 # No Black Box: Full Visibility & Control
 
-**MitraHelix operates with complete transparency, showing you every file read and every proposed diff.**
+**MitraH operates with complete transparency, showing you every file read and every proposed diff.**
 
-Understand exactly what MitraHelix is doing and why—no obfuscation. Review all actions and approve changes before they're made. MitraHelix uses checkpoints, allowing you to easily revert if needed, maintaining full control over your codebase. With BYO-key, you also have clear cost transparency.
+Understand exactly what MitraH is doing and why—no obfuscation. Review all actions and approve changes before they're made. MitraH uses checkpoints, allowing you to easily revert if needed, maintaining full control over your codebase. With BYO-key, you also have clear cost transparency.
 
-![MitraHelix Transparency Demo](https://storage.googleapis.com/cline_public_images/docs/assets/clines-transparency-hifi-5_compress.webp)
+![MitraH Transparency Demo](https://storage.googleapis.com/cline_public_images/docs/assets/clines-transparency-hifi-5_compress.webp)

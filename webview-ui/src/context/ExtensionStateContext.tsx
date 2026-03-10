@@ -375,7 +375,7 @@ export const ExtensionStateContextProvider: React.FC<{
 									: prevState.autoApprovalSettings,
 							}
 
-							// MitraHelix: skip welcome/onboarding screen, go straight to chat
+							// MitraH: skip welcome/onboarding screen, go straight to chat
 							setShowWelcome(false)
 							setOnboardingModels(undefined)
 

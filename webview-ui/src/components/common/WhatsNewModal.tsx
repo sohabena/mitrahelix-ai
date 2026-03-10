@@ -134,7 +134,7 @@ export const WhatsNewModal: React.FC<WhatsNewModalProps> = ({ open, onClose, ver
 
 						{/* GitHub Star CTA */}
 						<p className="text-sm text-center" style={{ color: "var(--vscode-descriptionForeground)" }}>
-							Please support MitraHelix by{" "}
+							Please support Mitra Helix AI by{" "}
 							<a
 								href="https://github.com/cline/cline"
 								rel="noopener noreferrer"

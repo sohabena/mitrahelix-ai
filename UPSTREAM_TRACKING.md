@@ -1,12 +1,14 @@
-# MitraHelix Upstream Tracking
+# Mitra Helix AI - Upstream Tracking
 
-This document tracks all differences between MitraHelix and the upstream Cline codebase to facilitate easy upstream merges.
+This document tracks all differences between Mitra Helix AI (agent name: MitraH) and the upstream Cline codebase to facilitate easy upstream merges.
 
 ## Base
 
 - **Upstream:** https://github.com/cline/cline
 - **Base commit:** `6129caa` (Cline v3.71.0)
 - **Import date:** 2026-03-10
+- **Product name:** Mitra Helix AI
+- **Agent name:** MitraH
 - **Rebrand strategy:** Tier 1 (merge-friendly) -- only user-facing strings changed, all internal identifiers identical to Cline
 
 ## Upstream Remote
@@ -89,6 +91,10 @@ All changes below are **Tier 1 rebrand only** -- user-facing display strings "Cl
 |------|--------------------|
 | `webview-ui/index.html` | Page title |
 | `webview-ui/src/context/ExtensionStateContext.tsx` | Bypassed Cline welcome/onboarding/login screen -- users go straight to chat and configure API keys in settings |
+
+### Naming Convention
+- **Product name (branding, titles, about pages):** "Mitra Helix AI"
+- **Agent persona (chat actions, commands, where the agent speaks/acts):** "MitraH"
 
 ### Webview UI - Chat Components
 

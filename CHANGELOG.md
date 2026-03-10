@@ -1,8 +1,8 @@
 # Changelog
 
-## MitraHelix (based on Cline v3.71.0)
+## Mitra Helix AI (based on Cline v3.71.0)
 
-- Rebranded from Cline to MitraHelix
+- Rebranded from Cline to Mitra Helix AI (agent name: MitraH)
 - All existing Cline features preserved
 - See UPSTREAM_TRACKING.md for differences from upstream
 
