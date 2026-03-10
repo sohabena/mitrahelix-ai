@@ -1,9 +1,0 @@
-# Visual Score Agent Rules
-# Add your custom rules here. The AI agent will follow these rules when working on your project.
-
-# Example rules:
-# - Always use TypeScript strict mode
-# - Prefer functional components over class components
-# - Use 2-space indentation
-# - Write tests for all new functions
-# - Follow the existing code style in the project

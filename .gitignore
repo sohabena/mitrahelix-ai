@@ -1,9 +1,53 @@
-# Build artifacts
-visual-score/dist/
+out
+dist
+dist-standalone
+node_modules
+tmp
+.vscode-test/
+*.vsix
 
-# Cline reference clone (large, re-clone as needed)
-research/cline-reference/
-
-# OS files
 .DS_Store
-Thumbs.db
+.idea
+.husky/_/
+
+pnpm-lock.yaml
+
+.clineignore
+.venv
+.actrc
+CLAUDE.local.md
+
+webview-ui/src/**/*.js
+webview-ui/src/**/*.js.map
+
+# Ignore coverage directories and files
+coverage
+coverage-unit
+.nyc_output
+# But don't ignore the coverage scripts in .github/scripts/
+!.github/scripts/coverage/
+
+*evals.env
+.env
+.secrets
+.github/act/.secrets
+
+.worktrees
+
+## Generated files ##
+src/generated/
+src/shared/proto/
+webview-ui/src/services/grpc-client.ts
+*.tsbuildinfo
+
+# E2E Tests
+test-results
+
+/.github/act
+/pkg
+.secrets
+
+*.tsbuildinfo
+
+# Smoke test results (generated)
+evals/smoke-tests/results/
