@@ -47,10 +47,24 @@ export class ExecuteCommandTool implements Tool {
         setTimeout(() => child.kill('SIGKILL'), 5000);
       }, DEFAULT_COMMAND_TIMEOUT);
 
+      if (context.abortSignal) {
+        const onAbort = () => {
+          child.kill('SIGTERM');
+          setTimeout(() => child.kill('SIGKILL'), 2000);
+        };
+        if (context.abortSignal.aborted) {
+          onAbort();
+        } else {
+          context.abortSignal.addEventListener('abort', onAbort, { once: true });
+          child.on('close', () => context.abortSignal!.removeEventListener('abort', onAbort));
+        }
+      }
+
       child.stdout.on('data', (data: Buffer) => {
         stdout += data.toString();
         if (stdout.length > MAX_COMMAND_OUTPUT) {
           stdout = stdout.slice(0, MAX_COMMAND_OUTPUT) + '\n[OUTPUT TRUNCATED]';
+          clearTimeout(timeout);
           child.kill('SIGTERM');
         }
       });

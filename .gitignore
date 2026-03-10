@@ -1,0 +1,9 @@
+# Build artifacts
+visual-score/dist/
+
+# Cline reference clone (large, re-clone as needed)
+research/cline-reference/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -15,7 +15,13 @@ export class WorkspaceIndexer {
     }
 
     const lines: string[] = [];
-    await this.buildTree(this.workspaceRoot, '', 2, lines, 0);
+    const maxLines = 500;
+    await this.buildTree(this.workspaceRoot, '', 4, lines, 0, maxLines);
+    if (lines.length > maxLines) {
+      const overflow = lines.length - maxLines;
+      lines.length = maxLines;
+      lines.push(`\n... (${overflow} more entries not shown)`);
+    }
     this.cachedTree = lines.join('\n');
     this.lastCacheTime = now;
     return this.cachedTree;
@@ -26,15 +32,20 @@ export class WorkspaceIndexer {
     prefix: string,
     maxDepth: number,
     lines: string[],
-    depth: number
+    depth: number,
+    maxLines: number
   ): Promise<void> {
-    if (depth >= maxDepth || lines.length > 300) return;
+    if (depth >= maxDepth || lines.length > maxLines) return;
 
     const skipDirs = new Set([
       'node_modules', '.git', 'dist', 'out', '__pycache__',
       '.next', 'venv', '.venv', '.cache', 'coverage',
       '.nyc_output', '.turbo', '.vercel',
     ]);
+
+    const allowedDotDirs = new Set(['.github', '.vscode']);
+    const allowedDotFiles = new Set(['.env', '.gitignore']);
+    const allowedDotPrefixes = ['.eslintrc', '.prettierrc'];
 
     let entries;
     try {
@@ -43,15 +54,25 @@ export class WorkspaceIndexer {
       return;
     }
 
-    const dirs = entries.filter((e) => e.isDirectory() && !skipDirs.has(e.name) && !e.name.startsWith('.'));
-    const files = entries.filter((e) => e.isFile() && !e.name.startsWith('.'));
+    const isDotAllowedDir = (name: string) =>
+      allowedDotDirs.has(name);
+
+    const isDotAllowedFile = (name: string) =>
+      allowedDotFiles.has(name) || allowedDotPrefixes.some((p) => name.startsWith(p));
+
+    const dirs = entries.filter(
+      (e) => e.isDirectory() && !e.isSymbolicLink() && !skipDirs.has(e.name) && (!e.name.startsWith('.') || isDotAllowedDir(e.name))
+    );
+    const files = entries.filter(
+      (e) => e.isFile() && !e.isSymbolicLink() && (!e.name.startsWith('.') || isDotAllowedFile(e.name))
+    );
 
     dirs.sort((a, b) => a.name.localeCompare(b.name));
     files.sort((a, b) => a.name.localeCompare(b.name));
 
     for (const dir of dirs) {
       lines.push(`${prefix}${dir.name}/`);
-      await this.buildTree(path.join(dirPath, dir.name), prefix + '  ', maxDepth, lines, depth + 1);
+      await this.buildTree(path.join(dirPath, dir.name), prefix + '  ', maxDepth, lines, depth + 1, maxLines);
     }
 
     for (const file of files) {

@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build MitraHelix",
+      "type": "shell",
+      "command": "node esbuild.mjs --watch",
+      "options": {
+        "cwd": "${workspaceFolder}/visual-score"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^✘ \\[ERROR\\] (.+)$",
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^\\[esbuild\\]",
+          "endsPattern": "^\\[esbuild\\] (Build complete|Watching)"
+        }
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "silent"
+      }
+    }
+  ]
+}

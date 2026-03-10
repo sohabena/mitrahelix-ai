@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run MitraHelix Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/visual-score",
+        "${workspaceFolder}/visual-score"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/visual-score/out/**/*.js"
+      ]
+    }
+  ]
+}

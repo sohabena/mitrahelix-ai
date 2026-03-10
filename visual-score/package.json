@@ -34,7 +34,8 @@
         {
           "type": "webview",
           "id": "mitraHelix.chatView",
-          "name": "MitraHelix Chat"
+          "name": "MitraHelix Chat",
+          "retainContextWhenHidden": true
         }
       ]
     },
@@ -50,8 +51,36 @@
       {
         "command": "mitraHelix.openPanel",
         "title": "MitraHelix: Open Chat Panel (Right Side)"
+      },
+      {
+        "command": "mitraHelix.askAboutSelection",
+        "title": "Ask MitraHelix About This"
+      },
+      {
+        "command": "mitraHelix.addFileToContext",
+        "title": "Add to MitraHelix Context"
+      },
+      {
+        "command": "mitraHelix.setApiKey",
+        "title": "Set API Key",
+        "category": "MitraHelix"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "mitraHelix.askAboutSelection",
+          "when": "editorHasSelection",
+          "group": "mitrahelix@1"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "mitraHelix.addFileToContext",
+          "group": "mitrahelix@1"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "mitraHelix.focusChat",
@@ -62,6 +91,11 @@
         "command": "mitraHelix.openPanel",
         "key": "ctrl+shift+l",
         "mac": "cmd+shift+l"
+      },
+      {
+        "command": "mitraHelix.newChat",
+        "key": "ctrl+shift+n",
+        "mac": "cmd+shift+n"
       }
     ],
     "configuration": {
@@ -83,27 +117,32 @@
         "mitraHelix.anthropicApiKey": {
           "type": "string",
           "default": "",
-          "description": "Your Anthropic API key"
+          "description": "Your Anthropic API key (prefer 'MitraHelix: Set API Key' command for secure storage)",
+          "markdownDeprecationMessage": "Use the **MitraHelix: Set API Key** command for encrypted storage via VS Code SecretStorage."
         },
         "mitraHelix.openaiApiKey": {
           "type": "string",
           "default": "",
-          "description": "Your OpenAI API key"
+          "description": "Your OpenAI API key (prefer 'MitraHelix: Set API Key' command for secure storage)",
+          "markdownDeprecationMessage": "Use the **MitraHelix: Set API Key** command for encrypted storage via VS Code SecretStorage."
         },
         "mitraHelix.openrouterApiKey": {
           "type": "string",
           "default": "",
-          "description": "Your OpenRouter API key"
+          "description": "Your OpenRouter API key (prefer 'MitraHelix: Set API Key' command for secure storage)",
+          "markdownDeprecationMessage": "Use the **MitraHelix: Set API Key** command for encrypted storage via VS Code SecretStorage."
         },
         "mitraHelix.googleApiKey": {
           "type": "string",
           "default": "",
-          "description": "Your Google Gemini API key"
+          "description": "Your Google Gemini API key (prefer 'MitraHelix: Set API Key' command for secure storage)",
+          "markdownDeprecationMessage": "Use the **MitraHelix: Set API Key** command for encrypted storage via VS Code SecretStorage."
         },
         "mitraHelix.deepseekApiKey": {
           "type": "string",
           "default": "",
-          "description": "Your DeepSeek API key"
+          "description": "Your DeepSeek API key (prefer 'MitraHelix: Set API Key' command for secure storage)",
+          "markdownDeprecationMessage": "Use the **MitraHelix: Set API Key** command for encrypted storage via VS Code SecretStorage."
         },
         "mitraHelix.ollamaBaseUrl": {
           "type": "string",
@@ -117,12 +156,12 @@
         },
         "mitraHelix.maxTokens": {
           "type": "number",
-          "default": 8192,
+          "default": 16384,
           "description": "Maximum tokens per LLM response"
         },
         "mitraHelix.maxBudgetPerTask": {
           "type": "number",
-          "default": 1.0,
+          "default": 1,
           "description": "Maximum cost in USD per task"
         },
         "mitraHelix.autoApproveReads": {
@@ -144,6 +183,16 @@
           "type": "number",
           "default": 100000,
           "description": "Maximum context window size in tokens"
+        },
+        "mitraHelix.autoLintAfterEdit": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically check for linter errors after file edits and feed them to the AI"
+        },
+        "mitraHelix.crossSessionMemory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Remember project facts across conversations"
         }
       }
     }
@@ -158,6 +207,7 @@
     "lint": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/diff": "^7.0.2",
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.85.0",
     "esbuild": "^0.19.11",
@@ -165,6 +215,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
-    "openai": "^4.70.0"
+    "@types/ws": "^8.18.1",
+    "diff": "^8.0.3",
+    "js-tiktoken": "^1.0.21",
+    "openai": "^4.70.0",
+    "ws": "^8.19.0"
   }
 }

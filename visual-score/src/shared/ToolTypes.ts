@@ -23,6 +23,8 @@ export interface ToolContext {
   outputChannel: { appendLine(value: string): void };
   postMessage: (message: unknown) => void;
   waitForApproval?: (toolCall: ToolCallInfo) => Promise<boolean>;
+  abortSignal?: AbortSignal;
+  ignoreManager?: { isIgnored(relativePath: string): boolean };
 }
 
 export interface ToolCallInfo {
@@ -37,6 +39,7 @@ export interface ToolResult {
   success: boolean;
   output: string;
   error?: string;
+  diff?: { filePath: string; original: string; modified: string; isNewFile: boolean; addedLines: number; removedLines: number };
 }
 
 export interface LLMToolDefinition {

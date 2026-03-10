@@ -7,6 +7,7 @@ export interface ModelInfo {
   inputCostPer1M: number;
   outputCostPer1M: number;
   supportsToolUse: boolean;
+  supportsVision: boolean;
   isDefault?: boolean;
 }
 
@@ -28,10 +29,11 @@ const MODEL_CATALOG: ModelInfo[] = [
     name: 'Claude Sonnet 4.6',
     provider: 'anthropic',
     contextWindow: 200000,
-    maxOutput: 8192,
+    maxOutput: 65536,
     inputCostPer1M: 3.0,
     outputCostPer1M: 15.0,
     supportsToolUse: true,
+    supportsVision: true,
     isDefault: true,
   },
   {
@@ -39,20 +41,22 @@ const MODEL_CATALOG: ModelInfo[] = [
     name: 'Claude Opus 4.6',
     provider: 'anthropic',
     contextWindow: 200000,
-    maxOutput: 8192,
+    maxOutput: 131072,
     inputCostPer1M: 5.0,
     outputCostPer1M: 25.0,
     supportsToolUse: true,
+    supportsVision: true,
   },
   {
     id: 'claude-sonnet-4-5',
     name: 'Claude Sonnet 4.5',
     provider: 'anthropic',
     contextWindow: 200000,
-    maxOutput: 8192,
+    maxOutput: 65536,
     inputCostPer1M: 3.0,
     outputCostPer1M: 15.0,
     supportsToolUse: true,
+    supportsVision: true,
   },
   {
     id: 'claude-haiku-4-5',
@@ -63,6 +67,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 1.0,
     outputCostPer1M: 5.0,
     supportsToolUse: true,
+    supportsVision: true,
   },
 
   // ── OpenAI (March 2026) ──
@@ -75,6 +80,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 1.75,
     outputCostPer1M: 14.0,
     supportsToolUse: true,
+    supportsVision: true,
     isDefault: true,
   },
   {
@@ -86,6 +92,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 1.25,
     outputCostPer1M: 10.0,
     supportsToolUse: true,
+    supportsVision: true,
   },
   {
     id: 'gpt-5-mini',
@@ -96,6 +103,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 0.30,
     outputCostPer1M: 1.25,
     supportsToolUse: true,
+    supportsVision: true,
   },
   {
     id: 'gpt-5-nano',
@@ -106,6 +114,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 0.05,
     outputCostPer1M: 0.40,
     supportsToolUse: true,
+    supportsVision: true,
   },
   {
     id: 'o4-mini',
@@ -116,6 +125,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 1.1,
     outputCostPer1M: 4.4,
     supportsToolUse: true,
+    supportsVision: true,
   },
   {
     id: 'o3-pro',
@@ -126,6 +136,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 20.0,
     outputCostPer1M: 80.0,
     supportsToolUse: true,
+    supportsVision: true,
   },
   {
     id: 'gpt-4o',
@@ -136,6 +147,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 2.5,
     outputCostPer1M: 10.0,
     supportsToolUse: true,
+    supportsVision: true,
   },
 
   // ── Google Gemini (March 2026) ──
@@ -144,10 +156,11 @@ const MODEL_CATALOG: ModelInfo[] = [
     name: 'Gemini 2.5 Flash',
     provider: 'google',
     contextWindow: 1048576,
-    maxOutput: 8192,
+    maxOutput: 65536,
     inputCostPer1M: 0.15,
     outputCostPer1M: 0.6,
     supportsToolUse: true,
+    supportsVision: true,
     isDefault: true,
   },
   {
@@ -155,10 +168,11 @@ const MODEL_CATALOG: ModelInfo[] = [
     name: 'Gemini 2.5 Pro',
     provider: 'google',
     contextWindow: 1048576,
-    maxOutput: 8192,
+    maxOutput: 65536,
     inputCostPer1M: 1.25,
     outputCostPer1M: 10.0,
     supportsToolUse: true,
+    supportsVision: true,
   },
   {
     id: 'gemini-3-flash-preview',
@@ -169,6 +183,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 0.15,
     outputCostPer1M: 0.6,
     supportsToolUse: true,
+    supportsVision: true,
   },
   {
     id: 'gemini-3.1-pro-preview',
@@ -179,6 +194,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 2.0,
     outputCostPer1M: 12.0,
     supportsToolUse: true,
+    supportsVision: true,
   },
 
   // ── DeepSeek (March 2026 — V3.2 unified model) ──
@@ -191,6 +207,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 0.14,
     outputCostPer1M: 0.28,
     supportsToolUse: true,
+    supportsVision: false,
     isDefault: true,
   },
   {
@@ -202,6 +219,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 0.55,
     outputCostPer1M: 2.19,
     supportsToolUse: false,
+    supportsVision: false,
   },
 
   // ── OpenRouter (popular models via OpenRouter) ──
@@ -210,10 +228,11 @@ const MODEL_CATALOG: ModelInfo[] = [
     name: 'Claude Sonnet 4.6 (via OpenRouter)',
     provider: 'openrouter',
     contextWindow: 200000,
-    maxOutput: 8192,
+    maxOutput: 65536,
     inputCostPer1M: 3.0,
     outputCostPer1M: 15.0,
     supportsToolUse: true,
+    supportsVision: true,
     isDefault: true,
   },
   {
@@ -225,16 +244,18 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 1.75,
     outputCostPer1M: 14.0,
     supportsToolUse: true,
+    supportsVision: true,
   },
   {
     id: 'google/gemini-2.5-flash',
     name: 'Gemini 2.5 Flash (via OpenRouter)',
     provider: 'openrouter',
     contextWindow: 1048576,
-    maxOutput: 8192,
+    maxOutput: 65536,
     inputCostPer1M: 0.15,
     outputCostPer1M: 0.6,
     supportsToolUse: true,
+    supportsVision: true,
   },
   {
     id: 'deepseek/deepseek-chat',
@@ -245,6 +266,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 0.14,
     outputCostPer1M: 0.28,
     supportsToolUse: true,
+    supportsVision: false,
   },
   {
     id: 'meta-llama/llama-3.1-405b-instruct',
@@ -255,6 +277,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 2.0,
     outputCostPer1M: 2.0,
     supportsToolUse: true,
+    supportsVision: false,
   },
 
   // ── Ollama (local, free) ──
@@ -267,6 +290,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 0,
     outputCostPer1M: 0,
     supportsToolUse: false,
+    supportsVision: false,
     isDefault: true,
   },
   {
@@ -278,6 +302,18 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 0,
     outputCostPer1M: 0,
     supportsToolUse: false,
+    supportsVision: false,
+  },
+  {
+    id: 'qwen2.5:0.5b',
+    name: 'Qwen 2.5 0.5B',
+    provider: 'ollama',
+    contextWindow: 32768,
+    maxOutput: 2048,
+    inputCostPer1M: 0,
+    outputCostPer1M: 0,
+    supportsToolUse: false,
+    supportsVision: false,
   },
   {
     id: 'qwen2.5-coder',
@@ -288,6 +324,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 0,
     outputCostPer1M: 0,
     supportsToolUse: false,
+    supportsVision: false,
   },
   {
     id: 'deepseek-coder-v2',
@@ -298,6 +335,7 @@ const MODEL_CATALOG: ModelInfo[] = [
     inputCostPer1M: 0,
     outputCostPer1M: 0,
     supportsToolUse: false,
+    supportsVision: false,
   },
 ];
 

@@ -4,11 +4,12 @@ import type { LLMChunk, LLMMessage, LLMOptions, LLMToolDefinition, LLMUsage } fr
 
 export type OpenAIBackendType = 'openai' | 'google' | 'deepseek' | 'openrouter' | 'ollama';
 
-// Reasoning models that don't support temperature or system messages in some cases
-const REASONING_MODEL_PREFIXES = ['o1', 'o3', 'o4', 'gpt-5', 'deepseek-reasoner'];
-
 function isReasoningModel(modelId: string): boolean {
-  return REASONING_MODEL_PREFIXES.some((prefix) => modelId.startsWith(prefix));
+  const baseName = modelId.includes('/') ? modelId.split('/').pop()! : modelId;
+  if (baseName === 'deepseek-reasoner') return true;
+  if (baseName.startsWith('o1') || baseName.startsWith('o3') || baseName.startsWith('o4')) return true;
+  if (/^gpt-5($|\.\d)/.test(baseName)) return true;
+  return false;
 }
 
 export class OpenAIProvider implements LLMProvider {
@@ -64,9 +65,9 @@ export class OpenAIProvider implements LLMProvider {
     // max_completion_tokens for native OpenAI (required for GPT-5.x / o-series)
     // max_tokens for all OpenAI-compatible endpoints (Google, DeepSeek, Ollama, OpenRouter)
     if (this.backendType === 'openai') {
-      params.max_completion_tokens = options?.maxTokens || 8192;
+      params.max_completion_tokens = options?.maxTokens || 16384;
     } else {
-      params.max_tokens = options?.maxTokens || 8192;
+      params.max_tokens = options?.maxTokens || 16384;
     }
 
     // stream_options for usage tracking — supported by OpenAI, DeepSeek, OpenRouter, Google (2.5+)
@@ -93,7 +94,8 @@ export class OpenAIProvider implements LLMProvider {
 
     try {
       const stream = await this.client.chat.completions.create(
-        params as unknown as OpenAI.ChatCompletionCreateParamsStreaming
+        params as unknown as OpenAI.ChatCompletionCreateParamsStreaming,
+        options?.signal ? { signal: options.signal } : {}
       );
 
       const toolCallAccumulators: Map<number, { id: string; name: string; args: string }> = new Map();
@@ -121,20 +123,29 @@ export class OpenAIProvider implements LLMProvider {
           }
         }
 
-        if (choice?.finish_reason === 'tool_calls' || choice?.finish_reason === 'stop') {
-          for (const [, acc] of toolCallAccumulators) {
-            let args: Record<string, unknown> = {};
-            try {
-              if (acc.args) args = JSON.parse(acc.args);
-            } catch {
-              args = { _raw: acc.args };
-            }
-            yield {
-              type: 'tool_use',
-              toolCall: { id: acc.id, name: acc.name, arguments: args },
-            };
+        if (choice?.finish_reason) {
+          if (choice.finish_reason === 'content_filter') {
+            yield { type: 'error', error: 'Response blocked by content filter.' };
+            return;
           }
-          toolCallAccumulators.clear();
+          if (choice.finish_reason === 'length') {
+            yield { type: 'text', text: '\n\n[Response truncated — max output tokens reached]' };
+            toolCallAccumulators.clear();
+          } else {
+            for (const [, acc] of toolCallAccumulators) {
+              let args: Record<string, unknown> = {};
+              try {
+                if (acc.args) args = JSON.parse(acc.args);
+              } catch {
+                args = { _raw: acc.args };
+              }
+              yield {
+                type: 'tool_use',
+                toolCall: { id: acc.id, name: acc.name, arguments: args },
+              };
+            }
+            toolCallAccumulators.clear();
+          }
         }
 
         if (chunk.usage) {
@@ -143,8 +154,25 @@ export class OpenAIProvider implements LLMProvider {
         }
       }
 
+      // Flush any remaining tool calls if stream ended without finish_reason
+      if (toolCallAccumulators.size > 0) {
+        for (const [, acc] of toolCallAccumulators) {
+          let args: Record<string, unknown> = {};
+          try {
+            if (acc.args) args = JSON.parse(acc.args);
+          } catch {
+            args = { _raw: acc.args };
+          }
+          yield {
+            type: 'tool_use',
+            toolCall: { id: acc.id, name: acc.name, arguments: args },
+          };
+        }
+      }
+
       yield { type: 'stop' };
     } catch (error: unknown) {
+      if (options?.signal?.aborted) return;
       const message = error instanceof Error ? error.message : String(error);
       const providerLabel = this.backendType === 'openai' ? 'OpenAI'
         : this.backendType === 'google' ? 'Google Gemini'
@@ -174,21 +202,40 @@ export class OpenAIProvider implements LLMProvider {
   }
 
   private convertMessages(systemPrompt: string, messages: LLMMessage[]): OpenAI.ChatCompletionMessageParam[] {
+    const useDevRole = this.backendType === 'openai' && isReasoningModel(this.modelId);
+    const systemRole = useDevRole ? 'developer' : 'system';
     const result: OpenAI.ChatCompletionMessageParam[] = [
-      { role: 'system', content: systemPrompt },
+      { role: systemRole as 'system', content: systemPrompt },
     ];
 
     for (const msg of messages) {
       if (msg.role === 'system') continue;
 
       if (msg.role === 'user') {
-        result.push({ role: 'user', content: msg.content });
+        if (msg.imageContent && msg.imageContent.length > 0) {
+          const parts: Array<{ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }> = [
+            { type: 'text', text: msg.content },
+          ];
+          for (const part of msg.imageContent) {
+            if (part.type === 'image') {
+              parts.push({
+                type: 'image_url',
+                image_url: { url: `data:${part.source.media_type};base64,${part.source.data}` },
+              });
+            } else if (part.type === 'image_url') {
+              parts.push({ type: 'image_url', image_url: part.image_url });
+            }
+          }
+          result.push({ role: 'user', content: parts } as OpenAI.ChatCompletionMessageParam);
+        } else {
+          result.push({ role: 'user', content: msg.content });
+        }
       } else if (msg.role === 'assistant') {
         const assistantMsg: OpenAI.ChatCompletionAssistantMessageParam = {
           role: 'assistant',
           content: msg.content || null,
         };
-        if (msg.toolCalls && msg.toolCalls.length > 0) {
+        if (this.supportsNativeToolUse && msg.toolCalls && msg.toolCalls.length > 0) {
           assistantMsg.tool_calls = msg.toolCalls.map((tc) => ({
             id: tc.id,
             type: 'function' as const,
@@ -200,11 +247,18 @@ export class OpenAIProvider implements LLMProvider {
         }
         result.push(assistantMsg);
       } else if (msg.role === 'tool') {
-        result.push({
-          role: 'tool',
-          tool_call_id: msg.toolCallId || '',
-          content: msg.content,
-        });
+        if (this.supportsNativeToolUse) {
+          result.push({
+            role: 'tool',
+            tool_call_id: msg.toolCallId || '',
+            content: msg.content,
+          });
+        } else {
+          result.push({
+            role: 'user',
+            content: `[Tool Result (${msg.toolCallId})]\n${msg.content}`,
+          });
+        }
       }
     }
 

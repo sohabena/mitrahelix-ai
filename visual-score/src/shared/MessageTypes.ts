@@ -19,11 +19,14 @@ export interface ToolResult {
   success: boolean;
   output: string;
   error?: string;
+  diff?: { filePath: string; original: string; modified: string; isNewFile: boolean; addedLines: number; removedLines: number };
 }
 
 export interface Attachment {
-  type: 'file' | 'folder' | 'url' | 'problems';
+  type: 'file' | 'folder' | 'url' | 'problems' | 'git' | 'terminal' | 'selection' | 'image';
   value: string;
+  displayName?: string;
+  mimeType?: string;
 }
 
 export interface Settings {
@@ -52,13 +55,30 @@ export type WebviewMessage =
   | { type: 'approveToolCall'; toolCallId: string }
   | { type: 'rejectToolCall'; toolCallId: string; reason?: string }
   | { type: 'newTask' }
-  | { type: 'getState' }
-  | { type: 'updateSettings'; settings: Partial<Settings> }
-  | { type: 'restoreCheckpoint'; checkpointId: string }
-  | { type: 'toggleMode'; mode: 'act' | 'plan' }
+  | { type: 'toggleMode'; mode: string }
   | { type: 'selectModel'; provider: string; model: string }
-  | { type: 'runWorkflow'; workflowName: string; userText: string }
-  | { type: 'webviewReady' };
+  | { type: 'runWorkflow'; workflowName: string; userText: string; attachments?: Attachment[] }
+  | { type: 'webviewReady' }
+  | { type: 'requestFileList'; query: string }
+  | { type: 'requestFolderList'; query: string }
+  | { type: 'openRulesFile' }
+  | { type: 'showDiff'; filePath: string; original: string; modified: string }
+  | { type: 'requestTaskHistory' }
+  | { type: 'deleteTaskHistory'; taskId: string }
+  | { type: 'exportTaskHistory'; taskId: string; format: 'markdown' | 'json' }
+  | { type: 'resumeTask'; taskId: string }
+  | { type: 'requestCheckpoints' }
+  | { type: 'restoreCheckpoint'; checkpointId: string }
+  | { type: 'runCodeBlock'; code: string; language: string }
+  | { type: 'applyCodeBlock'; code: string; language: string }
+  | { type: 'openUrl'; url: string }
+  | { type: 'previewDiff'; toolName: string; path: string; content?: unknown; diff?: unknown }
+  | { type: 'executePlan'; planId: string }
+  | { type: 'editPlanStep'; planId: string; stepId: string; title: string; description: string }
+  | { type: 'skipPlanStep'; planId: string; stepId: string }
+  | { type: 'updateSettings'; settings: { budget?: number; autoApprove?: AutoApproveSettings } }
+  | { type: 'setApiKey'; provider: string }
+  | { type: 'openSettings' };
 
 // Extension → Webview messages
 export interface ModelCatalogEntry {
@@ -75,9 +95,14 @@ export interface WorkflowInfo {
   fileName: string;
 }
 
+export interface FileListItem {
+  path: string;
+  name: string;
+  isDirectory: boolean;
+}
+
 export type ExtensionMessage =
   | { type: 'addMessage'; message: ChatMessage }
-  | { type: 'updateMessage'; messageId: string; content: string; isStreaming: boolean }
   | { type: 'streamToken'; messageId: string; token: string }
   | { type: 'streamEnd'; messageId: string }
   | { type: 'toolCallStarted'; toolCall: ToolCallInfo }
@@ -87,7 +112,65 @@ export type ExtensionMessage =
   | { type: 'taskError'; error: string }
   | { type: 'costUpdate'; cost: CostInfo }
   | { type: 'stateUpdate'; state: AgentState }
-  | { type: 'settingsLoaded'; settings: Settings }
   | { type: 'modelCatalog'; models: ModelCatalogEntry[]; currentProvider: string; currentModel: string }
   | { type: 'workflowList'; workflows: WorkflowInfo[] }
-  | { type: 'clearMessages' };
+  | { type: 'clearMessages' }
+  | { type: 'fileList'; files: FileListItem[] }
+  | { type: 'folderList'; folders: FileListItem[] }
+  | { type: 'activeFileInfo'; filePath: string; fileName: string }
+  | { type: 'prefillAttachment'; attachment: Attachment }
+  | { type: 'askAboutContext'; text: string; attachment: Attachment }
+  | { type: 'followUpSuggestions'; question?: string; suggestions: string[] }
+  | { type: 'modeUpdate'; mode: string }
+  | { type: 'modeList'; modes: Array<{ slug: string; name: string; icon: string; description: string; isBuiltin: boolean }> }
+  | { type: 'taskHistory'; tasks: TaskHistorySummaryMsg[] }
+  | { type: 'checkpointCreated'; checkpoint: { id: string; label: string; timestamp: string } }
+  | { type: 'checkpointList'; checkpoints: Array<{ id: string; label: string; timestamp: string; toolName: string }> }
+  | { type: 'checkpointRestored'; result: { restored: string[]; errors: string[] } }
+  | { type: 'planUpdate'; plan: Plan }
+  | { type: 'planStepUpdate'; planId: string; stepId: string; status: PlanStep['status'] }
+  | { type: 'planCleared' }
+  | { type: 'updateMessageContent'; messageId: string; content: string }
+  | { type: 'settingsUpdate'; settings: Partial<AutoApproveSettings> }
+  | { type: 'taskResumed'; taskId: string; title: string };
+
+export interface TaskHistorySummaryMsg {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  provider: string;
+  model: string;
+  totalCost: number;
+  messageCount: number;
+  status: string;
+}
+
+export interface AutoApproveSettings {
+  yoloMode: boolean;
+  readFiles: boolean;
+  readFilesExternally: boolean;
+  editFiles: boolean;
+  editFilesExternally: boolean;
+  executeSafeCommands: boolean;
+  executeAllCommands: boolean;
+  useBrowser: boolean;
+  useMcp: boolean;
+  enableNotifications: boolean;
+}
+
+export interface PlanStep {
+  id: string;
+  title: string;
+  description: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'skipped';
+  fileReferences: string[];
+}
+
+export interface Plan {
+  id: string;
+  title: string;
+  summary: string;
+  steps: PlanStep[];
+  createdAt: number;
+}

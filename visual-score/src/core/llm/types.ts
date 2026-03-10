@@ -1,8 +1,15 @@
+export type ContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } }
+  | { type: 'image_url'; image_url: { url: string } };
+
 export interface LLMMessage {
   role: 'system' | 'user' | 'assistant' | 'tool';
   content: string;
+  imageContent?: ContentPart[];
   toolCallId?: string;
   toolCalls?: LLMToolCall[];
+  isError?: boolean;
 }
 
 export interface LLMToolCall {
@@ -30,14 +37,10 @@ export type LLMChunk =
 export interface LLMOptions {
   temperature?: number;
   maxTokens?: number;
-  stopSequences?: string[];
+  signal?: AbortSignal;
 }
 
 export interface LLMUsage {
   inputTokens: number;
   outputTokens: number;
-}
-
-export interface LLMStreamResult {
-  usage: LLMUsage;
 }

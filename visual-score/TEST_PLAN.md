@@ -1,5 +1,7 @@
 # MitraHelix AI Agent — Complete Test Plan
 
+> **93 test cases across 22 categories** covering all features implemented through Round 35.
+
 ## Table of Contents
 1. [Environment Setup](#1-environment-setup)
 2. [Build Verification](#2-build-verification)
@@ -15,6 +17,14 @@
 12. [Error Handling & Edge Case Tests](#12-error-handling--edge-case-tests)
 13. [Security Tests](#13-security-tests)
 14. [Performance Tests](#14-performance-tests)
+15. [Workflow & Slash Command Tests](#15-workflow--slash-command-tests)
+16. [Rules System Tests](#16-rules-system-tests)
+17. [Enhanced @Mention Tests](#17-enhanced-mention-tests)
+18. [Model Selector Tests](#18-model-selector-tests)
+19. [Right Panel Chat Tests](#19-right-panel-chat-tests)
+20. [React Error Boundary Tests](#20-react-error-boundary-tests)
+21. [Context Menu Tests](#21-context-menu-tests)
+22. [Streaming Performance Tests](#22-streaming-performance-tests)
 
 ---
 
@@ -859,6 +869,290 @@ Use this template to record your test results:
 
 ---
 
+---
+
+## 15. Workflow & Slash Command Tests
+
+### Test 15.1: Workflow Discovery
+
+1. Create `.mitrahelix/workflows/code-review.md`:
+   ```markdown
+   ---
+   description: Perform a code review
+   ---
+   Review the code for bugs and style issues.
+   ```
+2. Open MitraHelix chat
+
+**Expected**: Typing `/` in the input box shows a dropdown with "code-review" workflow.
+
+### Test 15.2: Slash Command Execution
+
+1. Type `/code-review` and select it
+2. Add " src/index.js" after the workflow name
+3. Press Enter
+
+**Expected**: The workflow instructions are prepended to your message. The agent reviews the file.
+
+### Test 15.3: Workflow Keyboard Navigation
+
+1. Type `/` to open the slash menu
+2. Press ArrowDown / ArrowUp
+
+**Expected**: Selection highlight moves between workflows. Enter selects the highlighted one.
+
+### Test 15.4: Workflow File Watcher
+
+1. Create a new workflow file `.mitrahelix/workflows/test-flow.md`
+2. Type `/` in the input
+
+**Expected**: The new workflow appears in the list without needing to restart.
+
+### Test 15.5: Invalid Workflow File
+
+1. Create a workflow file larger than 50KB
+
+**Expected**: File is silently skipped. Other workflows still load correctly.
+
+---
+
+## 16. Rules System Tests
+
+### Test 16.1: Simple Rules File
+
+1. Create `.mitrahelixrules` with: `Always respond in bullet points.`
+2. Send: "What is TypeScript?"
+
+**Expected**: Response uses bullet points.
+
+### Test 16.2: Rules Directory with Frontmatter
+
+1. Create `.mitrahelix/rules/ts-rules.md`:
+   ```markdown
+   ---
+   globs: ["**/*.ts"]
+   ---
+   - Use strict TypeScript
+   - Prefer const over let
+   ```
+2. Open a `.ts` file as active editor
+3. Send: "Write a function"
+
+**Expected**: The rule is activated (matching `.ts` glob). Code follows the rules.
+
+### Test 16.3: Always-Apply Rule
+
+1. Create `.mitrahelix/rules/global.md`:
+   ```markdown
+   ---
+   alwaysApply: true
+   ---
+   Be very concise in all responses.
+   ```
+2. Send any message
+
+**Expected**: Response is notably concise (rule always active).
+
+### Test 16.4: AGENTS.md Compatibility
+
+1. Create `AGENTS.md` in workspace root with rules content
+2. Send a message
+
+**Expected**: Rules from AGENTS.md are included in context.
+
+### Test 16.5: .cursorrules Compatibility
+
+1. Create `.cursorrules` in workspace root with rules content
+2. Send a message
+
+**Expected**: Rules from .cursorrules are included in context.
+
+### Test 16.6: Rules Budget (30KB)
+
+1. Create many large rule files exceeding 30KB total
+
+**Expected**: Rules are truncated with a notice: "[Rules truncated — N more rules omitted to fit context budget]"
+
+---
+
+## 17. Enhanced @Mention Tests
+
+### Test 17.1: @git Mention
+
+1. Make some git changes in the workspace (stage, modify files)
+2. Send: `@git what have I changed?`
+
+**Expected**: Git diff and status are attached to the message. Agent knows about your changes.
+
+### Test 17.2: @selection Mention
+
+1. Select some code in the editor
+2. Send: `@selection explain this code`
+
+**Expected**: The selected text is attached with file path and line range.
+
+### Test 17.3: @terminal Mention
+
+1. Have at least one terminal open in VS Code
+2. Send: `@terminal what terminals do I have?`
+
+**Expected**: Terminal names are listed in the context.
+
+### Test 17.4: @file with Spaces in Path
+
+1. Create a file with spaces: `src/My Component.tsx`
+2. Send: `@file "src/My Component.tsx" explain this`
+
+**Expected**: File is correctly resolved using quoted path syntax.
+
+### Test 17.5: @url with Redirects
+
+1. Send: `@url https://httpbin.org/redirect/3 what is this?`
+
+**Expected**: URL is fetched following redirects (up to 10). Content is included.
+
+### Test 17.6: Mention Budget (150K)
+
+1. Attach many large files via @file and UI attachments
+
+**Expected**: After reaching 150K chars total, additional mentions are skipped. No context overflow.
+
+### Test 17.7: Cross-Deduplication
+
+1. Type `@file README.md` in the message AND attach README.md via the UI file picker
+
+**Expected**: The file content appears only once in context, not duplicated.
+
+---
+
+## 18. Model Selector Tests
+
+### Test 18.1: Model Picker UI
+
+1. Click the model name in TaskHeader
+
+**Expected**: A dropdown opens showing models grouped by provider (Anthropic, OpenAI, Google, etc.).
+
+### Test 18.2: Switch Model
+
+1. Select a different model from the dropdown
+2. Send a message
+
+**Expected**: The new model is used. Cost tracking reflects the new model's pricing.
+
+### Test 18.3: Model Picker Disabled During Task
+
+1. Start a task (send a message)
+2. Try to open the model picker while the agent is running
+
+**Expected**: Model picker is disabled/grayed out during active tasks.
+
+---
+
+## 19. Right Panel Chat Tests
+
+### Test 19.1: Open Panel
+
+1. Press `Ctrl+Shift+L` (or `Cmd+Shift+L`)
+
+**Expected**: A chat panel opens in the editor area beside your files.
+
+### Test 19.2: Panel Sync
+
+1. Have both sidebar and panel open
+2. Send a message from either
+
+**Expected**: Both views show the same messages and state.
+
+### Test 19.3: Panel Close Cleanup
+
+1. Have the panel open with an active task
+2. Close the panel tab
+
+**Expected**: The agent task is properly cancelled.
+
+---
+
+## 20. React Error Boundary Tests
+
+### Test 20.1: Error Recovery
+
+1. If the webview ever crashes (blank panel)
+
+**Expected**: An error message appears with "Something went wrong", the error details, and a "Retry" button. Clicking Retry recovers the UI.
+
+---
+
+## 21. Context Menu Tests
+
+### Test 21.1: Editor Context Menu
+
+1. Select some code in the editor
+2. Right-click → "Ask MitraHelix About This"
+
+**Expected**: MitraHelix sidebar opens with the selected code attached as context.
+
+### Test 21.2: Explorer Context Menu
+
+1. Right-click a file in the Explorer
+2. Click "Add to MitraHelix Context"
+
+**Expected**: The file is added as an attachment in the MitraHelix input box.
+
+---
+
+## 22. Streaming Performance Tests
+
+### Test 22.1: Token Buffer Performance
+
+1. Send a message that generates a long response (500+ words)
+
+**Expected**: Tokens appear smoothly without visible jank. The 50ms buffer batches tokens efficiently. No O(n²) rendering lag.
+
+### Test 22.2: React.memo Optimization
+
+1. During streaming, observe the TaskHeader and InputBox
+
+**Expected**: TaskHeader and InputBox do NOT visibly re-render during token streaming (they're wrapped in React.memo).
+
+---
+
+## Updated Test Results Template
+
+| Test ID | Test Name | Status | Notes |
+|---------|-----------|--------|-------|
+| 15.1 | Workflow Discovery | ⬜ PASS / ⬜ FAIL | |
+| 15.2 | Slash Command Execution | ⬜ PASS / ⬜ FAIL | |
+| 15.3 | Workflow Keyboard Nav | ⬜ PASS / ⬜ FAIL | |
+| 15.4 | Workflow File Watcher | ⬜ PASS / ⬜ FAIL | |
+| 15.5 | Invalid Workflow File | ⬜ PASS / ⬜ FAIL | |
+| 16.1 | Simple Rules File | ⬜ PASS / ⬜ FAIL | |
+| 16.2 | Rules with Globs | ⬜ PASS / ⬜ FAIL | |
+| 16.3 | Always-Apply Rule | ⬜ PASS / ⬜ FAIL | |
+| 16.4 | AGENTS.md Compat | ⬜ PASS / ⬜ FAIL | |
+| 16.5 | .cursorrules Compat | ⬜ PASS / ⬜ FAIL | |
+| 16.6 | Rules Budget | ⬜ PASS / ⬜ FAIL | |
+| 17.1 | @git Mention | ⬜ PASS / ⬜ FAIL | |
+| 17.2 | @selection Mention | ⬜ PASS / ⬜ FAIL | |
+| 17.3 | @terminal Mention | ⬜ PASS / ⬜ FAIL | |
+| 17.4 | @file with Spaces | ⬜ PASS / ⬜ FAIL | |
+| 17.5 | @url with Redirects | ⬜ PASS / ⬜ FAIL | |
+| 17.6 | Mention Budget | ⬜ PASS / ⬜ FAIL | |
+| 17.7 | Cross-Deduplication | ⬜ PASS / ⬜ FAIL | |
+| 18.1 | Model Picker UI | ⬜ PASS / ⬜ FAIL | |
+| 18.2 | Switch Model | ⬜ PASS / ⬜ FAIL | |
+| 18.3 | Picker Disabled | ⬜ PASS / ⬜ FAIL | |
+| 19.1 | Open Panel | ⬜ PASS / ⬜ FAIL | |
+| 19.2 | Panel Sync | ⬜ PASS / ⬜ FAIL | |
+| 19.3 | Panel Close | ⬜ PASS / ⬜ FAIL | |
+| 20.1 | Error Recovery | ⬜ PASS / ⬜ FAIL | |
+| 21.1 | Editor Context Menu | ⬜ PASS / ⬜ FAIL | |
+| 21.2 | Explorer Context Menu | ⬜ PASS / ⬜ FAIL | |
+| 22.1 | Token Buffer Perf | ⬜ PASS / ⬜ FAIL | |
+| 22.2 | React.memo Opt | ⬜ PASS / ⬜ FAIL | |
+
+---
+
 ## Quick Smoke Test (5-Minute Checklist)
 
 If you only have 5 minutes, run these tests to verify core functionality:
@@ -871,3 +1165,6 @@ If you only have 5 minutes, run these tests to verify core functionality:
 6. ⬜ **Cancel**: Send a message, click Cancel → stops gracefully
 7. ⬜ **Security**: Send "Read ../outside.txt" → access denied error
 8. ⬜ **New Chat**: Click New Chat → messages cleared, cost reset
+9. ⬜ **Mode**: Toggle to Plan mode → send "Create a file" → no tool calls, text-only plan
+10. ⬜ **Workflow**: Type `/` → slash menu appears with workflows
+11. ⬜ **Model**: Click model name → selector dropdown shows models grouped by provider

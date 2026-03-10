@@ -25,7 +25,7 @@ export class ListFilesTool implements Tool {
 
   async execute(params: Record<string, unknown>, context: ToolContext): Promise<ToolResult> {
     const listPath = params.path as string;
-    const recursive = params.recursive as boolean || false;
+    const recursive = params.recursive === true || params.recursive === 'true';
 
     if (!listPath && listPath !== '.') {
       return { success: false, output: '', error: 'Missing required parameter: path' };
@@ -43,7 +43,7 @@ export class ListFilesTool implements Tool {
       }
 
       const lines: string[] = [];
-      await this.listDir(absolutePath, '', recursive ? 3 : 1, lines, 0);
+      await this.listDir(absolutePath, '', recursive ? 3 : 1, lines, 0, context);
 
       if (lines.length === 0) {
         return { success: true, output: `${listPath}/ (empty directory)` };
@@ -64,7 +64,8 @@ export class ListFilesTool implements Tool {
     prefix: string,
     maxDepth: number,
     lines: string[],
-    currentDepth: number
+    currentDepth: number,
+    context: ToolContext
   ): Promise<void> {
     if (currentDepth >= maxDepth || lines.length > 500) return;
 
@@ -89,13 +90,18 @@ export class ListFilesTool implements Tool {
         return;
       }
 
+      if (entry.isSymbolicLink()) continue;
+
+      const fullPath = path.join(dirPath, entry.name);
+      const relativePath = path.relative(context.workspaceRoot, fullPath);
+      if (context.ignoreManager?.isIgnored(relativePath)) continue;
+
       const isDir = entry.isDirectory();
       const icon = isDir ? '📁' : '📄';
       lines.push(`${prefix}${icon} ${entry.name}${isDir ? '/' : ''}`);
 
       if (isDir && !skipDirs.has(entry.name)) {
-        const fullPath = path.join(dirPath, entry.name);
-        await this.listDir(fullPath, prefix + '  ', maxDepth, lines, currentDepth + 1);
+        await this.listDir(fullPath, prefix + '  ', maxDepth, lines, currentDepth + 1, context);
       }
     }
   }

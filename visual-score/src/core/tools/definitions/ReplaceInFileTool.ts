@@ -41,8 +41,13 @@ export class ReplaceInFileTool implements Tool {
       return { success: false, output: '', error: `Access denied: path "${filePath}" is outside the workspace.` };
     }
 
+    if (context.ignoreManager?.isIgnored(filePath)) {
+      return { success: false, output: '', error: `Access denied: "${filePath}" is protected by .mitrahelixignore` };
+    }
+
     try {
       let content = await fs.readFile(absolutePath, 'utf-8');
+      const originalContent = content;
       const blocks = this.parseSearchReplaceBlocks(diff);
 
       if (blocks.length === 0) {
@@ -54,13 +59,25 @@ export class ReplaceInFileTool implements Tool {
       for (let i = 0; i < blocks.length; i++) {
         const { search, replace } = blocks[i];
 
+        if (!search) {
+          return {
+            success: false,
+            output: changes.join('\n'),
+            error: `SEARCH block ${i + 1} is empty. Each SEARCH block must contain the exact text to find.`,
+          };
+        }
+
         if (!content.includes(search)) {
-          // Try with normalized whitespace
-          const normalizedContent = content.replace(/\r\n/g, '\n');
           const normalizedSearch = search.replace(/\r\n/g, '\n');
+          const normalizedContent = content.replace(/\r\n/g, '\n');
 
           if (normalizedContent.includes(normalizedSearch)) {
-            content = normalizedContent.replace(normalizedSearch, replace);
+            const nIdx = normalizedContent.indexOf(normalizedSearch);
+            const origIdx = this.mapNormalizedIndex(content, nIdx);
+            const origEnd = this.mapNormalizedIndex(content, nIdx + normalizedSearch.length);
+            const useCrlf = content.includes('\r\n');
+            const adjustedReplace = useCrlf ? replace.replace(/(?<!\r)\n/g, '\r\n') : replace.replace(/\r\n/g, '\n');
+            content = content.slice(0, origIdx) + adjustedReplace + content.slice(origEnd);
             changes.push(`Block ${i + 1}: Applied (with normalized line endings)`);
           } else {
             return {
@@ -70,16 +87,39 @@ export class ReplaceInFileTool implements Tool {
             };
           }
         } else {
-          content = content.replace(search, replace);
+          const idx = content.indexOf(search);
+          content = content.slice(0, idx) + replace + content.slice(idx + search.length);
           changes.push(`Block ${i + 1}: Applied successfully`);
         }
       }
 
       await fs.writeFile(absolutePath, content, 'utf-8');
 
+      const originalLines = originalContent.split('\n');
+      const newLines = content.split('\n');
+      let addedLines = 0;
+      let removedLines = 0;
+      const maxLen = Math.max(originalLines.length, newLines.length);
+      for (let i = 0; i < maxLen; i++) {
+        const oldLine = i < originalLines.length ? originalLines[i] : undefined;
+        const newLine = i < newLines.length ? newLines[i] : undefined;
+        if (oldLine !== newLine) {
+          if (oldLine !== undefined) removedLines++;
+          if (newLine !== undefined) addedLines++;
+        }
+      }
+
       return {
         success: true,
         output: `Applied ${blocks.length} change(s) to ${filePath}:\n${changes.join('\n')}`,
+        diff: {
+          filePath,
+          original: originalContent,
+          modified: content,
+          isNewFile: false,
+          addedLines,
+          removedLines,
+        },
       };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
@@ -90,15 +130,34 @@ export class ReplaceInFileTool implements Tool {
     }
   }
 
+  private mapNormalizedIndex(original: string, normalizedIdx: number): number {
+    let nPos = 0;
+    let oPos = 0;
+    while (nPos < normalizedIdx && oPos < original.length) {
+      if (original[oPos] === '\r' && original[oPos + 1] === '\n') {
+        oPos += 2;
+      } else {
+        oPos += 1;
+      }
+      nPos += 1;
+    }
+    return oPos;
+  }
+
   private parseSearchReplaceBlocks(diff: string): Array<{ search: string; replace: string }> {
     const blocks: Array<{ search: string; replace: string }> = [];
-    const regex = /<<<<<<< SEARCH\n([\s\S]*?)\n=======\n([\s\S]*?)\n>>>>>>> REPLACE/g;
+    const normalizedDiff = diff.replace(/\r\n/g, '\n');
+    const regex = /<<<<<<< SEARCH\n([\s\S]*?)\n=======\n([\s\S]*?\n?)>>>>>>> REPLACE/g;
 
     let match: RegExpExecArray | null;
-    while ((match = regex.exec(diff)) !== null) {
+    while ((match = regex.exec(normalizedDiff)) !== null) {
+      let replace = match[2];
+      if (replace.endsWith('\n')) {
+        replace = replace.slice(0, -1);
+      }
       blocks.push({
         search: match[1],
-        replace: match[2],
+        replace,
       });
     }
 

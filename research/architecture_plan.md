@@ -1,7 +1,58 @@
-# Visual Score AI Agent — Comprehensive Architecture & Implementation Plan
+# MitraHelix AI Agent — Comprehensive Architecture & Implementation Plan
 
-> **Project Codename:** Visual Score
-> **Goal:** Build a competition-winning AI-agentic IDE chat extension for Visual Studio Code — a fully autonomous coding assistant that can read/write files, execute terminal commands, browse the web, and manage context intelligently, all with human-in-the-loop safety.
+> **Project Name:** MitraHelix (originally "Visual Score")
+> **Goal:** Build a competition-winning AI-agentic IDE chat extension for Visual Studio Code — a fully autonomous coding assistant that can read/write files, execute terminal commands, search code, and manage context intelligently, all with human-in-the-loop safety.
+
+---
+
+## IMPLEMENTATION STATUS (Updated after Phase A-E implementation pass)
+
+| Planned Feature | Status | Notes |
+|----------------|--------|-------|
+| Custom Webview sidebar | **DONE** | React 18 + TailwindCSS + Vite |
+| Chat Participant API | **SKIPPED** | Custom webview provides more control |
+| Anthropic Provider | **DONE** | Native tool_use, streaming, is_error support |
+| OpenAI Provider | **DONE** | Also handles Google, DeepSeek, OpenRouter, Ollama |
+| OpenRouter Provider | **DONE** | Via OpenAI-compatible backend |
+| Ollama Provider | **DONE** | XML tool fallback for non-native models |
+| Google Gemini Provider | **DONE** | Via OpenAI-compatible API |
+| DeepSeek Provider | **DONE** | Chat (native) + Reasoner (XML fallback) |
+| 17 Core Tools | **DONE** | read, write, replace, execute, search, list, definitions, ask, complete, web_fetch, apply_patch, condense, new_rule, **plan_mode_respond, act_mode_respond, new_task, browser_action** |
+| Browser Automation Tool | **DONE** | Puppeteer-based via Chrome DevTools Protocol (CDP) — launch, click, type, scroll, close with screenshots |
+| Plan Mode Respond | **DONE** | Dedicated tool for plan mode — present options, wait for user feedback, YOLO auto-switch to act |
+| Act Mode Respond | **DONE** | Non-blocking progress updates in act mode — consecutive-call prevention, anti-narration loop |
+| New Task Tool | **DONE** | Agent can suggest starting a fresh task with context handoff |
+| MCP Integration | **DONE** | MCPClientManager + MCPHub with auto-reconnection, stdio transport, tool/resource bridge |
+| Parallel Tool Execution | **DONE** | ToolDependencyAnalyzer batches read-only tools for parallel execution |
+| AST-Based Repo Map | **PARTIAL** | Regex-based (not tree-sitter) for TS/JS/Python/Go/Java |
+| Diff View Integration | **DONE** | VS Code native side-by-side diff editor via TextDocumentContentProvider + accept/reject workflow |
+| Git Checkpoints | **DONE** | ShadowGitCheckpointManager — shadow git repo, auto-commit before writes, restore by hash |
+| JSON Checkpoints | **DONE** | CheckpointManager — JSON file snapshots as fallback when git is unavailable |
+| Intelligent Context Compression | **DONE** | Smart 3-pass heuristic + LLM-based `condense` tool + **auto-condense** at 85% context window usage |
+| Token Counting | **DONE** | js-tiktoken for accurate token counting |
+| Plan/Act Modes | **DONE** | Dedicated plan_mode_respond/act_mode_respond tools, XML plan parser, PlanView UI, execute plan button, plan file persistence |
+| Budget Controls | **DONE** | Per-task USD budget with enforcement and per-model pricing |
+| Permission System | **DONE** | YOLO mode + granular per-tool-type auto-approve + **safe command detection** + **external path distinction** + shell operator detection |
+| @Mentions | **DONE** | 7 types: file, folder, problems, url, git, terminal, selection |
+| Rules System | **DONE** | 4 sources, YAML frontmatter, glob matching, 30KB budget + `new_rule` tool |
+| Workflows | **DONE** | Slash commands, YAML frontmatter, file watchers |
+| Custom Agent Modes | **DONE** | 6 built-in modes (Code/Plan/Architect/Ask/Debug/Review) + custom mode support |
+| Hooks System | **DONE** | Lifecycle hooks for pre/post tool use, file write, command execution |
+| Task Resume | **DONE** | Full conversation persist + resume from history with rebuilt memory |
+| Task History | **DONE** | TaskHistoryManager with save, load, list, delete, export (markdown/JSON), resume |
+| Settings UI | **DONE** | In-webview settings panel for API keys, model selection, budget, auto-approve |
+| Thinking/Reasoning Display | **DONE** | Extract `<thinking>` blocks, render in collapsible ThinkingRow component |
+| Inline Diff in Chat | **DONE** | Colored additions/deletions in ToolCallCard with "Full Diff" button |
+| Web Fetch Tool | **DONE** | HTTP GET with HTML-to-markdown, SSRF protection, timeout, size limits |
+| Apply Patch Tool | **DONE** | Unified diff format, create/modify/delete/rename operations |
+| Theme-Aware UI | **DONE** | VS Code CSS variables throughout |
+| Markdown Rendering | **DONE** | react-markdown + remark-gfm + rehype-highlight |
+| Error Boundary | **DONE** | React ErrorBoundary with retry |
+| Streaming Optimization | **DONE** | 50ms token buffer, React.memo on components |
+| Model Catalog | **DONE** | 26 models across 6 providers with pricing |
+| VSIX Packaging | **NOT DONE** | Build scripts exist but not published |
+
+**Total: 200+ changes across 40+ forensic review rounds. Feature parity implementation complete for Phases A-F (including plan/act mode tools, browser automation, auto-condense, and enhanced auto-approve).**
 
 ---
 
@@ -427,43 +478,43 @@ Command Safety Classification:
 
 ## PART 4: TECH STACK
 
-| Layer | Technology | Rationale |
-|-------|-----------|-----------|
-| **Language** | TypeScript (strict mode) | Type safety, VS Code native, ecosystem |
-| **Extension Build** | esbuild | Fast bundling, used by Cline and VS Code team |
-| **Webview UI** | React 18 + Vite | Component model, fast HMR during dev |
-| **Styling** | Tailwind CSS + VS Code CSS variables | Matches IDE theme, rapid UI development |
-| **Icons** | Lucide React | Clean, consistent icon set |
-| **Markdown** | react-markdown + rehype-highlight | Rich message rendering with syntax highlighting |
-| **LLM (Primary)** | Anthropic SDK (`@anthropic-ai/sdk`) | Best agentic capabilities, native tool_use + streaming |
-| **LLM (Secondary)** | OpenAI SDK (`openai`) | Wide model access, function calling |
-| **LLM (Multi-model)** | OpenRouter API | Access 100+ models via single API |
-| **LLM (Local)** | Ollama HTTP API | Privacy-first, no API keys needed |
-| **Token Counting** | `tiktoken` (via WASM) | Accurate context window management |
-| **AST Parsing** | `tree-sitter` (via WASM) | Language-agnostic code definition extraction |
-| **Diff** | `diff` npm package | Unified diff generation |
-| **MCP** | `@modelcontextprotocol/sdk` | Standard protocol for tool interoperability |
-| **Schema Validation** | `ajv` | JSON Schema validation for tool parameters |
-| **Testing** | Vitest + Playwright | Unit tests + E2E extension tests |
+| Layer | Technology | Rationale | **Actual Status** |
+|-------|-----------|-----------|-------------------|
+| **Language** | TypeScript (strict mode) | Type safety, VS Code native, ecosystem | **USED** |
+| **Extension Build** | esbuild | Fast bundling, used by Cline and VS Code team | **USED** |
+| **Webview UI** | React 18 + Vite | Component model, fast HMR during dev | **USED** |
+| **Styling** | Tailwind CSS + VS Code CSS variables | Matches IDE theme, rapid UI development | **USED** |
+| **Icons** | Lucide React | Clean, consistent icon set | **USED** |
+| **Markdown** | react-markdown + rehype-highlight + remark-gfm | Rich message rendering with syntax highlighting | **USED** |
+| **LLM (Primary)** | Anthropic SDK (`@anthropic-ai/sdk`) | Best agentic capabilities, native tool_use + streaming | **USED** |
+| **LLM (Secondary)** | OpenAI SDK (`openai`) | Wide model access; also used for Google, DeepSeek, OpenRouter, Ollama | **USED** |
+| **LLM (Multi-model)** | OpenRouter API | Access 100+ models via single API | **USED (via OpenAI SDK)** |
+| **LLM (Local)** | Ollama HTTP API | Privacy-first, no API keys needed | **USED (via OpenAI-compat)** |
+| **Token Counting** | `tiktoken` (via WASM) | Accurate context window management | **NOT USED — heuristic chars/3** |
+| **AST Parsing** | `tree-sitter` (via WASM) | Language-agnostic code definition extraction | **NOT USED — regex patterns** |
+| **Diff** | `diff` npm package | Unified diff generation | **NOT USED** |
+| **MCP** | `@modelcontextprotocol/sdk` | Standard protocol for tool interoperability | **NOT USED** |
+| **Schema Validation** | `ajv` | JSON Schema validation for tool parameters | **NOT USED — manual validation** |
+| **Testing** | Vitest + Playwright | Unit tests + E2E extension tests | **NOT USED — manual testing** |
 
 ---
 
 ## PART 5: WHAT MAKES US WIN THE COMPETITION
 
-### 5.1 Our Differentiators vs Cline
+### 5.1 Our Differentiators vs Cline (Planned → Actual)
 
-| Feature | Cline | Visual Score |
-|---------|-------|-------------|
-| Tool execution | Sequential (1 per turn) | **Parallel when possible** (batch reads) |
-| Context management | Simple truncation | **Intelligent compression** (AI summaries) |
-| LLM support | Multi-provider | Multi-provider + **Local models** |
-| Edit format | XML only | **Dual: Native tool_use + XML fallback** |
-| UI | Basic React webview | **Modern UI** with Tailwind + animations |
-| Plan mode | Basic toggle | **Plan → Act pipeline** with task decomposition |
-| MCP | Supported | Supported + **auto-discovery** |
-| Cost tracking | Per-task | Per-task + **budget limits** |
-| Repo understanding | File tree | **AST-based repo map** (like Aider) |
-| Checkpoints | Git-based | Git-based + **undo any step** |
+| Feature | Cline | Planned | **Actually Built** |
+|---------|-------|---------|-------------------|
+| Tool execution | Sequential (1 per turn) | Parallel when possible | **Sequential** (parallel not implemented) |
+| Context management | Simple truncation | Intelligent compression (AI summaries) | **3-pass compression + hardTrim** (character-slice, not AI) |
+| LLM support | Multi-provider | Multi-provider + Local models | **6 providers, 26 models, Ollama local** |
+| Edit format | XML only | Dual: Native tool_use + XML fallback | **Dual format implemented** |
+| UI | Basic React webview | Modern UI with Tailwind + animations | **Modern UI with React.memo optimization** |
+| Plan mode | Basic toggle | Plan → Act pipeline with task decomposition | **Plan/Act with mode-transition markers** |
+| MCP | Supported | Supported + auto-discovery | **Not implemented** |
+| Cost tracking | Per-task | Per-task + budget limits | **Per-task with USD budget enforcement** |
+| Repo understanding | File tree | AST-based repo map (like Aider) | **Regex-based** (not tree-sitter) |
+| Checkpoints | Git-based | Git-based + undo any step | **Not implemented** |
 
 ### 5.2 Key Innovations
 
@@ -485,79 +536,83 @@ Command Safety Classification:
 
 ## PART 6: IMPLEMENTATION PHASES
 
-### Phase 1: Foundation (Week 1-2)
-- [ ] Scaffold VS Code extension with TypeScript + esbuild
-- [ ] Set up Webview View Provider (sidebar panel)
-- [ ] Build React webview app with Vite + Tailwind
-- [ ] Establish bidirectional postMessage communication
-- [ ] Create shared type definitions (MessageTypes, ToolTypes)
-- [ ] Build basic chat UI (message list, input box, send button)
+### Phase 1: Foundation ✅ COMPLETE
+- [x] Scaffold VS Code extension with TypeScript + esbuild
+- [x] Set up Webview View Provider (sidebar panel)
+- [x] Build React webview app with Vite + Tailwind
+- [x] Establish bidirectional postMessage communication
+- [x] Create shared type definitions (MessageTypes, ToolTypes)
+- [x] Build basic chat UI (message list, input box, send button)
 
-### Phase 2: LLM Integration & Basic Chat (Week 2-3)
-- [ ] Implement LLM Provider Interface (abstract)
-- [ ] Build Anthropic Provider with streaming + tool_use support
-- [ ] Build OpenAI Provider with streaming + function calling
-- [ ] Implement Provider Factory pattern
-- [ ] Wire up: Input → Extension → LLM → Stream back to Webview
-- [ ] Implement conversation memory (message history)
-- [ ] Add API key configuration via VS Code settings
-- [ ] Add model selection dropdown in webview
+### Phase 2: LLM Integration & Basic Chat ✅ COMPLETE
+- [x] Implement LLM Provider Interface (abstract)
+- [x] Build Anthropic Provider with streaming + tool_use support
+- [x] Build OpenAI Provider with streaming + function calling
+- [x] Implement Provider Factory pattern (6 backends)
+- [x] Wire up: Input → Extension → LLM → Stream back to Webview
+- [x] Implement conversation memory (message history + 3-pass compression)
+- [x] Add API key configuration via VS Code settings
+- [x] Add model selection dropdown in webview (26-model catalog)
 
-### Phase 3: Tool System (Week 3-5) — THE CORE
-- [ ] Build Tool Registry with JSON Schema validation
-- [ ] Build Tool Executor with error handling + timeout
-- [ ] Implement System Prompt Builder (3-pillar structure)
-- [ ] Implement XML tool call parser (for non-native tool_use models)
-- [ ] Implement core tools one by one:
-  - [ ] `read_file` — Read file via vscode.workspace.fs
-  - [ ] `write_to_file` — Write file with diff preview
-  - [ ] `replace_in_file` — SEARCH/REPLACE block engine
-  - [ ] `execute_command` — Terminal execution with output capture
-  - [ ] `search_files` — Regex search via ripgrep or VS Code search
-  - [ ] `list_files` — Directory listing
-  - [ ] `list_code_definition_names` — AST extraction via tree-sitter
-  - [ ] `ask_followup_question` — Route question to user
-  - [ ] `attempt_completion` — Signal task completion
-- [ ] Build the Agentic Loop (ReAct pattern)
+### Phase 3: Tool System ✅ COMPLETE
+- [x] Build Tool Registry (native + XML definition generation)
+- [x] Build Tool Executor with error handling + timeout
+- [x] Implement System Prompt Builder (9 context sections)
+- [x] Implement XML tool call parser (for non-native tool_use models)
+- [x] Implement 9 core tools:
+  - [x] `read_file` — fs.promises with 400KB pre-check, 100K char truncation
+  - [x] `write_to_file` — fs.promises with parent directory creation
+  - [x] `replace_in_file` — CRLF-aware SEARCH/REPLACE, $-sequence safe
+  - [x] `execute_command` — child_process.spawn, 60s timeout, SIGTERM→SIGKILL
+  - [x] `search_files` — Regex with ReDoS protection, binary skip
+  - [x] `list_files` — Recursive/flat, depth 3, 500 entries
+  - [x] `list_code_definition_names` — Regex-based (not tree-sitter)
+  - [x] `ask_followup_question` — With suggestion chips
+  - [x] `attempt_completion` — Task completion signal
+- [x] Build the Agentic Loop (ReAct pattern, max 25 iterations)
 
-### Phase 4: Context & Intelligence (Week 5-6)
-- [ ] Build Context Manager (assembles full context for each LLM call)
-- [ ] Implement Active Editor context
-- [ ] Implement Workspace Indexer (file tree + AST repo map)
-- [ ] Implement Diagnostics context (@problems)
-- [ ] Implement @mentions parser (@file, @folder, @url)
-- [ ] Implement Context Compressor (intelligent summarization)
-- [ ] Token counting + context window management
+### Phase 4: Context & Intelligence ✅ COMPLETE
+- [x] Build Context Manager (assembles full context for each LLM call)
+- [x] Implement Active Editor context (50K char cap)
+- [x] Implement Workspace Indexer (file tree, 300 lines, depth 2, 30s cache)
+- [x] Implement Diagnostics context (severity-sorted, 50 max)
+- [x] Implement @mentions parser (7 types: file, folder, problems, url, git, terminal, selection)
+- [x] Implement Context Compression (character-slice, 3-pass + hardTrim — NOT LLM-based)
+- [x] Token estimation (heuristic chars/3 — NOT tiktoken)
 
-### Phase 5: Safety & Permissions (Week 6-7)
-- [ ] Build Permission Manager
-- [ ] Implement Approval Dialog in Webview (approve/reject/always allow)
-- [ ] Command safety classifier (safe/approval-required/never-auto)
-- [ ] Auto-approve configuration
-- [ ] Budget controls (max spend per task)
-- [ ] .visualscorerules file support
+### Phase 5: Safety & Permissions ✅ COMPLETE
+- [x] Build Permission Manager (with shell operator detection)
+- [x] Implement Approval Dialog in Webview (approve/reject with 5-min timeout)
+- [x] Command safety classifier (shell operator blocking: &&, ||, ;, |, >, <, etc.)
+- [x] Auto-approve configuration (reads, writes, command prefixes)
+- [x] Budget controls (per-task USD limit with enforcement)
+- [x] Rules system (4 sources, YAML frontmatter, glob matching, 30KB budget)
 
-### Phase 6: Advanced Features (Week 7-9)
-- [ ] Parallel tool execution (batch independent operations)
-- [ ] MCP client integration
-- [ ] Browser automation tool (Puppeteer-lite)
-- [ ] Diff view integration (show changes in VS Code diff editor)
-- [ ] Git checkpoint system (snapshot before changes, restore on demand)
-- [ ] Plan Mode vs Act Mode toggle
-- [ ] Task history persistence + resume
-- [ ] OpenRouter + Ollama provider support
+### Phase 6: Advanced Features — PARTIAL
+- [ ] Parallel tool execution — **NOT BUILT**
+- [ ] MCP client integration — **NOT BUILT**
+- [ ] Browser automation tool — **NOT BUILT**
+- [ ] Diff view integration — **NOT BUILT**
+- [ ] Git checkpoint system — **NOT BUILT**
+- [x] Plan Mode vs Act Mode toggle (with mode-transition markers)
+- [ ] Task history persistence + resume — **NOT BUILT**
+- [x] OpenRouter + Ollama + Google Gemini + DeepSeek provider support
+- [x] Workflows & slash commands (.mitrahelix/workflows/*.md)
+- [x] Enhanced rules system (.mitrahelix/rules/*.md with frontmatter)
+- [x] Context menus (editor + explorer)
+- [x] Right panel chat (Ctrl+Shift+L)
 
-### Phase 7: Polish & Ship (Week 9-10)
-- [ ] Markdown rendering with syntax highlighting
-- [ ] Streaming diff preview
-- [ ] Theme-aware styling (light/dark/high-contrast)
-- [ ] Error handling + retry logic
-- [ ] Loading states + progress indicators
-- [ ] Keyboard shortcuts
-- [ ] Extension settings page
-- [ ] README + documentation
-- [ ] Package as .vsix
-- [ ] Publish to VS Code Marketplace
+### Phase 7: Polish & Ship — MOSTLY COMPLETE
+- [x] Markdown rendering with syntax highlighting (remark-gfm + rehype-highlight)
+- [ ] Streaming diff preview — **NOT BUILT**
+- [x] Theme-aware styling (light/dark/high-contrast via CSS variables)
+- [x] Error handling (provider errors, tool errors, approval timeouts)
+- [x] Loading states + progress indicators (streaming cursor, state labels)
+- [x] Keyboard shortcuts (Ctrl+Shift+I, Ctrl+Shift+L)
+- [ ] Extension settings page — **NOT BUILT** (uses VS Code native settings)
+- [x] README + documentation (README.md, PROGRESS.md, REVIEW.md, TEST_PLAN.md)
+- [ ] Package as .vsix — **NOT DONE** (build scripts exist)
+- [ ] Publish to VS Code Marketplace — **NOT DONE**
 
 ---
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Zap, Clock, ToggleLeft, ToggleRight, Loader2, ChevronDown } from 'lucide-react';
-import type { AgentState, CostInfo, ModelCatalogEntry } from '../hooks/useChat';
+import { Zap, Clock, Loader2, ChevronDown, FileText, Settings2, History, Undo2 } from 'lucide-react';
+import type { AgentState, CostInfo, ModelCatalogEntry, ModeInfo } from '../hooks/useChat';
 
 const PROVIDER_LABELS: Record<string, string> = {
   anthropic: 'Anthropic',
@@ -14,24 +14,37 @@ const PROVIDER_LABELS: Record<string, string> = {
 interface TaskHeaderProps {
   agentState: AgentState;
   cost: CostInfo;
-  mode: 'act' | 'plan';
+  mode: string;
+  modeList: ModeInfo[];
   models: ModelCatalogEntry[];
   currentProvider: string;
   currentModel: string;
+  activeFile?: { filePath: string; fileName: string } | null;
   onToggleMode: () => void;
+  onSwitchMode: (slug: string) => void;
   onSelectModel: (provider: string, model: string) => void;
+  onOpenRules?: () => void;
+  onShowHistory?: () => void;
+  onOpenSettings?: () => void;
+  checkpoints?: Array<{ id: string; label: string; timestamp: string; toolName?: string }>;
+  onRestoreCheckpoint?: (id: string) => void;
 }
 
-export const TaskHeader: React.FC<TaskHeaderProps> = ({
-  agentState, cost, mode, models, currentProvider, currentModel, onToggleMode, onSelectModel,
+export const TaskHeader: React.FC<TaskHeaderProps> = React.memo(({
+  agentState, cost, mode, modeList, models, currentProvider, currentModel, activeFile, onToggleMode, onSwitchMode, onSelectModel, onOpenRules, onShowHistory, onOpenSettings, checkpoints, onRestoreCheckpoint,
 }) => {
   const [showModelPicker, setShowModelPicker] = useState(false);
+  const [showModePicker, setShowModePicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
+  const modePickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
         setShowModelPicker(false);
+      }
+      if (modePickerRef.current && !modePickerRef.current.contains(e.target as Node)) {
+        setShowModePicker(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
@@ -50,6 +63,10 @@ export const TaskHeader: React.FC<TaskHeaderProps> = ({
   })();
 
   const isActive = agentState !== 'idle';
+
+  const currentModeEntry = modeList.find((m) => m.slug === mode);
+  const displayModeName = currentModeEntry?.name || (mode === 'act' ? 'Act' : mode === 'plan' ? 'Plan' : mode);
+  const displayModeIcon = currentModeEntry?.icon || (mode === 'act' ? '⚡' : '📋');
 
   const currentModelEntry = models.find((m) => m.id === currentModel && m.provider === currentProvider);
   const displayModelName = currentModelEntry?.name || currentModel;
@@ -76,14 +93,57 @@ export const TaskHeader: React.FC<TaskHeaderProps> = ({
           <span className={isActive ? 'opacity-80' : 'opacity-50'}>{stateLabel}</span>
         </div>
 
-        <button
-          onClick={onToggleMode}
-          className="flex items-center gap-1 px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
-          title={mode === 'act' ? 'Switch to Plan Mode' : 'Switch to Act Mode'}
-        >
-          {mode === 'act' ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
-          <span className="font-medium">{mode === 'act' ? 'Act' : 'Plan'}</span>
-        </button>
+        <div className="relative" ref={modePickerRef}>
+          <button
+            onClick={() => {
+              if (modeList.length > 0) {
+                setShowModePicker(!showModePicker);
+              } else {
+                onToggleMode();
+              }
+            }}
+            disabled={isActive}
+            className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-opacity ${isActive ? 'opacity-30 cursor-not-allowed' : 'hover:opacity-80'}`}
+            title={isActive ? 'Cannot switch mode while task is running' : 'Select mode'}
+          >
+            <span className="text-[10px]">{displayModeIcon}</span>
+            <span className="font-medium">{displayModeName}</span>
+            {modeList.length > 0 && <ChevronDown size={8} className="opacity-50" />}
+          </button>
+          {showModePicker && modeList.length > 0 && (
+            <div
+              className="absolute left-0 top-full z-50 mt-0.5 rounded-md border shadow-lg overflow-y-auto min-w-[140px]"
+              style={{
+                maxHeight: '220px',
+                backgroundColor: 'var(--vscode-dropdown-background, var(--vscode-input-background))',
+                borderColor: 'var(--vscode-dropdown-border, var(--vscode-input-border, rgba(128,128,128,0.3)))',
+              }}
+            >
+              {modeList.map((m) => (
+                <button
+                  key={m.slug}
+                  onClick={() => {
+                    onSwitchMode(m.slug);
+                    setShowModePicker(false);
+                  }}
+                  className="flex items-center gap-1.5 w-full px-2 py-1 text-[10px] hover:opacity-100 transition-opacity text-left"
+                  style={{
+                    backgroundColor: m.slug === mode
+                      ? 'var(--vscode-list-activeSelectionBackground, rgba(0,120,212,0.3))'
+                      : 'transparent',
+                    color: m.slug === mode
+                      ? 'var(--vscode-list-activeSelectionForeground, inherit)'
+                      : 'inherit',
+                  }}
+                  title={m.description}
+                >
+                  <span>{m.icon}</span>
+                  <span className="truncate">{m.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="flex items-center gap-2 opacity-50">
           <span className="flex items-center gap-0.5">
@@ -97,17 +157,75 @@ export const TaskHeader: React.FC<TaskHeaderProps> = ({
         </div>
       </div>
 
-      {/* Row 2: Model selector */}
+      {/* Row 2: Active file + History + Rules */}
+      {(activeFile || onOpenRules || onShowHistory) && (
+        <div className="flex items-center justify-between px-3 pb-0.5 text-[9px]">
+          {activeFile ? (
+            <span className="flex items-center gap-1 opacity-40 truncate" title={activeFile.filePath}>
+              <FileText size={9} />
+              {activeFile.filePath}
+            </span>
+          ) : <span />}
+          <div className="flex items-center gap-2">
+            {checkpoints && checkpoints.length > 0 && onRestoreCheckpoint && !isActive && (
+              <button
+                onClick={() => {
+                  const latest = checkpoints[checkpoints.length - 1];
+                  if (latest) onRestoreCheckpoint(latest.id);
+                }}
+                className="flex items-center gap-0.5 opacity-40 hover:opacity-80 transition-opacity"
+                title={`Undo last edit: ${checkpoints[checkpoints.length - 1]?.label || 'checkpoint'}`}
+              >
+                <Undo2 size={9} />
+                Undo
+              </button>
+            )}
+            {onShowHistory && (
+              <button
+                onClick={onShowHistory}
+                className="flex items-center gap-0.5 opacity-40 hover:opacity-80 transition-opacity"
+                title="Task history"
+              >
+                <History size={9} />
+                History
+              </button>
+            )}
+            {onOpenSettings && (
+              <button
+                onClick={onOpenSettings}
+                className="flex items-center gap-0.5 opacity-40 hover:opacity-80 transition-opacity"
+                title="Open settings"
+              >
+                <Settings2 size={9} />
+                Settings
+              </button>
+            )}
+            {onOpenRules && (
+              <button
+                onClick={onOpenRules}
+                className="flex items-center gap-0.5 opacity-40 hover:opacity-80 transition-opacity"
+                title="Edit global rules (.mitrahelixrules)"
+              >
+                <FileText size={9} />
+                Rules
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Row 3: Model selector */}
       <div className="relative px-3 pb-1.5" ref={pickerRef}>
         <button
-          onClick={() => setShowModelPicker(!showModelPicker)}
-          className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] w-full hover:opacity-80 transition-opacity"
+          onClick={() => !isActive && setShowModelPicker(!showModelPicker)}
+          disabled={isActive}
+          className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] w-full transition-opacity ${isActive ? 'opacity-30 cursor-not-allowed' : 'hover:opacity-80'}`}
           style={{
             backgroundColor: 'var(--vscode-input-background)',
             borderColor: 'var(--vscode-input-border, var(--vscode-panel-border, rgba(128,128,128,0.3)))',
             border: '1px solid',
           }}
-          title="Select model"
+          title={isActive ? 'Cannot change model while task is running' : 'Select model'}
         >
           <span className="truncate flex-1 text-left opacity-70">{displayModelName}</span>
           <ChevronDown size={10} className="opacity-50 flex-shrink-0" />
@@ -167,4 +285,4 @@ export const TaskHeader: React.FC<TaskHeaderProps> = ({
       </div>
     </div>
   );
-};
+});

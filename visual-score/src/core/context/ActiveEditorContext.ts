@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { MAX_CONTENT_PREVIEW } from '../../shared/constants.js';
 
 export class ActiveEditorContext {
   async gather(): Promise<string> {
@@ -20,9 +21,8 @@ export class ActiveEditorContext {
     }
 
     const content = document.getText();
-    const maxChars = 50000;
-    const truncatedContent = content.length > maxChars
-      ? content.slice(0, maxChars) + '\n[FILE TRUNCATED]'
+    const truncatedContent = content.length > MAX_CONTENT_PREVIEW
+      ? content.slice(0, MAX_CONTENT_PREVIEW) + '\n[FILE TRUNCATED]'
       : content;
 
     let result = `File: ${filePath}\nLanguage: ${languageId}\nLines: ${lineCount}\nCursor: line ${cursorLine}`;

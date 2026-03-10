@@ -1,15 +1,51 @@
 import * as path from 'path';
+import * as fs from 'fs';
 
 /**
  * Check if a resolved absolute path is within the workspace root.
- * Prevents path traversal attacks via prefix matching
- * (e.g., workspace "project" must not allow access to "project-secrets").
+ * Resolves symlinks to prevent traversal, and uses case-insensitive
+ * comparison on Windows where the filesystem is case-insensitive.
  */
 export function isWithinWorkspace(absolutePath: string, workspaceRoot: string): boolean {
-  const normalizedPath = path.resolve(absolutePath);
-  const normalizedRoot = path.resolve(workspaceRoot);
+  let normalizedPath = path.resolve(absolutePath);
+  let normalizedRoot = path.resolve(workspaceRoot);
+
+  try {
+    normalizedPath = fs.realpathSync(normalizedPath);
+  } catch {
+    // File/directory may not exist yet (write_to_file creating new paths);
+    // walk up the directory tree until we find an existing ancestor
+    let current = normalizedPath;
+    let resolved = false;
+    while (true) {
+      const parent = path.dirname(current);
+      if (parent === current) break; // reached filesystem root
+      try {
+        const realParent = fs.realpathSync(parent);
+        const relative = path.relative(parent, normalizedPath);
+        normalizedPath = path.join(realParent, relative);
+        resolved = true;
+        break;
+      } catch {
+        current = parent;
+      }
+    }
+    if (!resolved) return false;
+  }
+
+  try {
+    normalizedRoot = fs.realpathSync(normalizedRoot);
+  } catch {
+    return false;
+  }
+
+  // Case-insensitive comparison on Windows
+  if (process.platform === 'win32') {
+    normalizedPath = normalizedPath.toLowerCase();
+    normalizedRoot = normalizedRoot.toLowerCase();
+  }
+
   if (normalizedPath === normalizedRoot) return true;
-  // Handle roots that already end with separator (e.g., "C:\")
   const rootPrefix = normalizedRoot.endsWith(path.sep) ? normalizedRoot : normalizedRoot + path.sep;
   return normalizedPath.startsWith(rootPrefix);
 }

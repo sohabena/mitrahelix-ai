@@ -8,10 +8,16 @@ export function getSystemInfo(workspaceRoot: string): string {
     : process.env.SHELL || '/bin/sh';
   const homeDir = os.homedir();
 
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
   return [
     `- OS: ${osName}`,
     `- Shell: ${shell}`,
     `- CWD: ${workspaceRoot}`,
     `- Home: ${homeDir}`,
+    `- Date: ${dateStr}`,
+    `- Time: ${timeStr}`,
   ].join('\n');
 }

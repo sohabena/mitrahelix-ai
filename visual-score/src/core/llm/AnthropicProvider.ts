@@ -25,7 +25,7 @@ export class AnthropicProvider implements LLMProvider {
 
     const params: Anthropic.MessageCreateParams = {
       model: this.modelId,
-      max_tokens: options?.maxTokens || 8192,
+      max_tokens: options?.maxTokens || 16384,
       system: systemPrompt,
       messages: anthropicMessages,
       stream: true,
@@ -44,7 +44,7 @@ export class AnthropicProvider implements LLMProvider {
     }
 
     try {
-      const stream = this.client.messages.stream(params);
+      const stream = this.client.messages.stream(params, options?.signal ? { signal: options.signal } : {});
 
       let currentToolCallId = '';
       let currentToolName = '';
@@ -89,6 +89,10 @@ export class AnthropicProvider implements LLMProvider {
           if (event.usage) {
             this.usage.outputTokens += event.usage.output_tokens;
           }
+          const delta = 'delta' in event ? (event.delta as { stop_reason?: string }) : null;
+          if (delta?.stop_reason === 'max_tokens') {
+            yield { type: 'text', text: '\n\n[Response truncated — max output tokens reached]' };
+          }
         } else if (event.type === 'message_start') {
           if (event.message.usage) {
             this.usage.inputTokens += event.message.usage.input_tokens;
@@ -98,6 +102,7 @@ export class AnthropicProvider implements LLMProvider {
 
       yield { type: 'stop' };
     } catch (error: unknown) {
+      if (options?.signal?.aborted) return;
       const message = error instanceof Error ? error.message : String(error);
       if (message.includes('authentication') || message.includes('api_key') || message.includes('401')) {
         yield { type: 'error', error: 'Invalid API key. Please check your Anthropic API key in VS Code settings.' };
@@ -124,18 +129,37 @@ export class AnthropicProvider implements LLMProvider {
       if (msg.role === 'system') continue;
 
       if (msg.role === 'user') {
-        // Merge consecutive user messages — Anthropic requires strict alternation
+        const contentParts: Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam> = [
+          { type: 'text', text: msg.content },
+        ];
+        if (msg.imageContent) {
+          for (const part of msg.imageContent) {
+            if (part.type === 'image') {
+              contentParts.push({
+                type: 'image',
+                source: {
+                  type: 'base64',
+                  media_type: part.source.media_type as Anthropic.ImageBlockParam.Source['media_type'],
+                  data: part.source.data,
+                },
+              });
+            }
+          }
+        }
+        const hasImages = contentParts.length > 1;
         const lastMsg = result[result.length - 1];
         if (lastMsg && lastMsg.role === 'user') {
-          // Convert existing content to array format if needed, then append
           const existing: unknown[] =
             typeof lastMsg.content === 'string'
               ? [{ type: 'text', text: lastMsg.content }]
               : Array.isArray(lastMsg.content) ? [...lastMsg.content] : [];
-          existing.push({ type: 'text', text: msg.content });
+          existing.push(...contentParts);
           (lastMsg as { role: 'user'; content: unknown }).content = existing;
         } else {
-          result.push({ role: 'user', content: msg.content });
+          result.push({
+            role: 'user',
+            content: hasImages ? contentParts : msg.content,
+          } as Anthropic.MessageParam);
         }
       } else if (msg.role === 'assistant') {
         const content: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = [];
@@ -162,6 +186,7 @@ export class AnthropicProvider implements LLMProvider {
           type: 'tool_result' as const,
           tool_use_id: msg.toolCallId || '',
           content: msg.content,
+          ...(msg.isError ? { is_error: true } : {}),
         };
         // Merge consecutive tool results into a single user message
         // Anthropic requires all tool_results after a multi-tool assistant message

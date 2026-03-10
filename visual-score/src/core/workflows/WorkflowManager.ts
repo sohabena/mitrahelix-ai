@@ -21,7 +21,7 @@ export class WorkflowManager {
   async getWorkflows(): Promise<WorkflowDefinition[]> {
     const now = Date.now();
     if (this.cachedWorkflows && (now - this.cacheTime) < this.CACHE_TTL) {
-      return this.cachedWorkflows;
+      return [...this.cachedWorkflows];
     }
 
     const workflows: WorkflowDefinition[] = [];
@@ -35,6 +35,8 @@ export class WorkflowManager {
         if (type === vscode.FileType.File && name.endsWith('.md')) {
           try {
             const fileUri = vscode.Uri.file(path.join(workflowDir, name));
+            const stat = await vscode.workspace.fs.stat(fileUri);
+            if (stat.size > 50_000) continue;
             const content = Buffer.from(await vscode.workspace.fs.readFile(fileUri)).toString('utf-8');
             const parsed = this.parseWorkflow(name, content);
             if (parsed) {
@@ -51,7 +53,7 @@ export class WorkflowManager {
 
     this.cachedWorkflows = workflows;
     this.cacheTime = now;
-    return workflows;
+    return [...workflows];
   }
 
   async getWorkflowByName(name: string): Promise<WorkflowDefinition | undefined> {
@@ -61,6 +63,7 @@ export class WorkflowManager {
 
   invalidateCache(): void {
     this.cachedWorkflows = null;
+    this.cacheTime = 0;
   }
 
   private parseWorkflow(fileName: string, raw: string): WorkflowDefinition | null {
@@ -69,14 +72,14 @@ export class WorkflowManager {
     let content = raw;
 
     // Parse YAML frontmatter: ---\ndescription: ...\n---
-    const frontmatterMatch = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
+    const frontmatterMatch = raw.match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n([\s\S]*)$/);
     if (frontmatterMatch) {
       const frontmatter = frontmatterMatch[1];
       content = frontmatterMatch[2].trim();
 
       const descMatch = frontmatter.match(/description:\s*(.+)/);
       if (descMatch) {
-        description = descMatch[1].trim();
+        description = descMatch[1].trim().replace(/^["']|["']$/g, '');
       }
     }
 

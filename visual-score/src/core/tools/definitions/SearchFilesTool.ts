@@ -44,9 +44,25 @@ export class SearchFilesTool implements Tool {
     }
 
     try {
-      const re = new RegExp(regex, 'gi');
+      let re: RegExp;
+      try {
+        re = new RegExp(regex, 'gi');
+      } catch (regexErr: unknown) {
+        const msg = regexErr instanceof Error ? regexErr.message : String(regexErr);
+        return { success: false, output: '', error: `Invalid regex: ${msg}` };
+      }
+
+      // Guard against catastrophic backtracking: test the regex on a probe string
+      const probe = 'a'.repeat(100);
+      const probeStart = Date.now();
+      re.test(probe);
+      if (Date.now() - probeStart > 200) {
+        return { success: false, output: '', error: 'Regex rejected: pattern appears to have catastrophic backtracking. Simplify the regex and try again.' };
+      }
+      re.lastIndex = 0;
+
       const results: string[] = [];
-      await this.searchDir(absolutePath, re, filePattern, results, context.workspaceRoot);
+      await this.searchDir(absolutePath, re, filePattern, results, context.workspaceRoot, context, 0);
 
       if (results.length === 0) {
         return { success: true, output: `No matches found for pattern "${regex}" in ${searchPath}` };
@@ -72,8 +88,11 @@ export class SearchFilesTool implements Tool {
     regex: RegExp,
     filePattern: string | undefined,
     results: string[],
-    workspaceRoot: string
+    workspaceRoot: string,
+    context: ToolContext,
+    depth: number = 0
   ): Promise<void> {
+    if (depth > 10) return;
     const skipDirs = new Set(['node_modules', '.git', 'dist', 'out', '.next', '__pycache__', 'venv', '.venv']);
 
     let entries;
@@ -86,11 +105,16 @@ export class SearchFilesTool implements Tool {
     for (const entry of entries) {
       if (results.length >= MAX_SEARCH_RESULTS * 2) break;
 
+      if (entry.isSymbolicLink()) continue;
+
       const fullPath = path.join(dirPath, entry.name);
+      const relativePath = path.relative(workspaceRoot, fullPath);
+
+      if (context.ignoreManager?.isIgnored(relativePath)) continue;
 
       if (entry.isDirectory()) {
         if (!skipDirs.has(entry.name)) {
-          await this.searchDir(fullPath, regex, filePattern, results, workspaceRoot);
+          await this.searchDir(fullPath, regex, filePattern, results, workspaceRoot, context, depth + 1);
         }
       } else if (entry.isFile()) {
         if (filePattern && !this.matchGlob(entry.name, filePattern)) continue;
@@ -102,7 +126,6 @@ export class SearchFilesTool implements Tool {
 
           const content = await fs.readFile(fullPath, 'utf-8');
           const lines = content.split('\n');
-          const relativePath = path.relative(workspaceRoot, fullPath);
 
           for (let i = 0; i < lines.length; i++) {
             regex.lastIndex = 0;
@@ -118,20 +141,44 @@ export class SearchFilesTool implements Tool {
   }
 
   private matchGlob(filename: string, pattern: string): boolean {
-    const ext = pattern.replace('*', '');
-    return filename.endsWith(ext);
+    let regexStr = '';
+    for (let i = 0; i < pattern.length; i++) {
+      if (pattern[i] === '*') {
+        regexStr += '.*';
+      } else if (pattern[i] === '?') {
+        regexStr += '.';
+      } else if (pattern[i] === '{') {
+        const close = pattern.indexOf('}', i);
+        if (close !== -1) {
+          const alts = pattern.slice(i + 1, close).split(',').map((a) => a.replace(/[.+^$|()\\[\]*?]/g, '\\$&'));
+          regexStr += `(${alts.join('|')})`;
+          i = close;
+        } else {
+          regexStr += '\\{';
+        }
+      } else if ('.+^$|()\\[]}'.includes(pattern[i])) {
+        regexStr += '\\' + pattern[i];
+      } else {
+        regexStr += pattern[i];
+      }
+    }
+    try {
+      return new RegExp(`^${regexStr}$`, 'i').test(filename);
+    } catch {
+      return filename.endsWith(pattern.replace(/\*/g, ''));
+    }
   }
 
   private isBinaryExtension(filename: string): boolean {
     const binaryExts = new Set([
-      '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.svg',
+      '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico',
       '.woff', '.woff2', '.ttf', '.eot',
       '.zip', '.tar', '.gz', '.rar', '.7z',
       '.exe', '.dll', '.so', '.dylib',
       '.pdf', '.doc', '.docx', '.xls', '.xlsx',
       '.mp3', '.mp4', '.avi', '.mov', '.wav',
       '.pyc', '.class', '.o', '.obj',
-      '.vsix', '.lock',
+      '.vsix',
     ]);
     const ext = path.extname(filename).toLowerCase();
     return binaryExts.has(ext);

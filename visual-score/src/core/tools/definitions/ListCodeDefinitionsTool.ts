@@ -33,8 +33,12 @@ export class ListCodeDefinitionsTool implements Tool {
     try {
       const stat = await fs.stat(absolutePath);
       if (stat.isDirectory()) {
-        return await this.processDirectory(absolutePath, context.workspaceRoot);
+        return await this.processDirectory(absolutePath, context.workspaceRoot, 0, { n: 0 }, context);
       } else {
+        const relativePath = path.relative(context.workspaceRoot, absolutePath);
+        if (context.ignoreManager?.isIgnored(relativePath)) {
+          return { success: false, output: '', error: `Access denied: "${targetPath}" is protected by .mitrahelixignore` };
+        }
         return await this.processFile(absolutePath, context.workspaceRoot);
       }
     } catch (error: unknown) {
@@ -43,21 +47,34 @@ export class ListCodeDefinitionsTool implements Tool {
     }
   }
 
-  private async processDirectory(dirPath: string, workspaceRoot: string, depth: number = 0): Promise<ToolResult> {
-    if (depth > 5) {
+  private static readonly MAX_DEFINITIONS = 500;
+
+  private async processDirectory(dirPath: string, workspaceRoot: string, depth: number = 0, defCount: { n: number } = { n: 0 }, context?: ToolContext): Promise<ToolResult> {
+    if (depth > 5 || defCount.n >= ListCodeDefinitionsTool.MAX_DEFINITIONS) {
       return { success: true, output: '' };
     }
     const results: string[] = [];
     const codeExts = new Set(['.ts', '.tsx', '.js', '.jsx', '.py', '.java', '.go', '.rs', '.c', '.cpp', '.h', '.cs']);
     const skipDirs = new Set(['node_modules', '.git', 'dist', 'out', '__pycache__']);
 
-    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    let entries;
+    try {
+      entries = await fs.readdir(dirPath, { withFileTypes: true });
+    } catch {
+      return { success: true, output: '' };
+    }
+
     for (const entry of entries) {
+      if (defCount.n >= ListCodeDefinitionsTool.MAX_DEFINITIONS) break;
       const fullPath = path.join(dirPath, entry.name);
+      const relativePath = path.relative(workspaceRoot, fullPath);
+
+      if (context?.ignoreManager?.isIgnored(relativePath)) continue;
+      if (entry.isSymbolicLink()) continue;
 
       if (entry.isDirectory()) {
         if (!skipDirs.has(entry.name)) {
-          const subResult = await this.processDirectory(fullPath, workspaceRoot, depth + 1);
+          const subResult = await this.processDirectory(fullPath, workspaceRoot, depth + 1, defCount, context);
           if (subResult.success && subResult.output) {
             results.push(subResult.output);
           }
@@ -69,31 +86,40 @@ export class ListCodeDefinitionsTool implements Tool {
       const ext = path.extname(entry.name).toLowerCase();
       if (!codeExts.has(ext)) continue;
 
-      const fileResult = await this.processFile(fullPath, workspaceRoot);
+      const fileResult = await this.processFile(fullPath, workspaceRoot, defCount);
       if (fileResult.success && fileResult.output) {
         results.push(fileResult.output);
       }
     }
 
-    return {
-      success: true,
-      output: results.length > 0 ? results.join('\n\n') : 'No code definitions found.',
-    };
+    const output = results.length > 0 ? results.join('\n\n') : 'No code definitions found.';
+    const truncNote = defCount.n >= ListCodeDefinitionsTool.MAX_DEFINITIONS
+      ? `\n\n[Output truncated at ${ListCodeDefinitionsTool.MAX_DEFINITIONS} definitions]`
+      : '';
+    return { success: true, output: output + truncNote };
   }
 
-  private async processFile(filePath: string, workspaceRoot: string): Promise<ToolResult> {
-    const content = await fs.readFile(filePath, 'utf-8');
-    const relativePath = path.relative(workspaceRoot, filePath);
-    const ext = path.extname(filePath).toLowerCase();
-    const definitions = this.extractDefinitions(content, ext);
+  private async processFile(filePath: string, workspaceRoot: string, defCount: { n: number } = { n: 0 }): Promise<ToolResult> {
+    try {
+      const stat = await fs.stat(filePath);
+      if (stat.size > 2_000_000) return { success: true, output: '' };
 
-    if (definitions.length === 0) {
+      const content = await fs.readFile(filePath, 'utf-8');
+      const relativePath = path.relative(workspaceRoot, filePath);
+      const ext = path.extname(filePath).toLowerCase();
+      const definitions = this.extractDefinitions(content, ext);
+
+      if (definitions.length === 0) {
+        return { success: true, output: '' };
+      }
+
+      defCount.n += definitions.length;
+      const header = `--- ${relativePath} ---`;
+      const defs = definitions.map((d) => `  ${d.type} ${d.name} (line ${d.line})`).join('\n');
+      return { success: true, output: `${header}\n${defs}` };
+    } catch {
       return { success: true, output: '' };
     }
-
-    const header = `--- ${relativePath} ---`;
-    const defs = definitions.map((d) => `  ${d.type} ${d.name} (line ${d.line})`).join('\n');
-    return { success: true, output: `${header}\n${defs}` };
   }
 
   private extractDefinitions(content: string, ext: string): Array<{ type: string; name: string; line: number }> {
@@ -138,6 +164,7 @@ export class ListCodeDefinitionsTool implements Tool {
         const match = line.match(regex);
         if (match && match[1]) {
           defs.push({ type, name: match[1], line: i + 1 });
+          break;
         }
       }
     }

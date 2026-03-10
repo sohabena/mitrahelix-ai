@@ -19,6 +19,16 @@ export class ToolRegistry {
     return this.tools.has(name);
   }
 
+  filter(predicate: (name: string) => boolean): ToolRegistry {
+    const filtered = new ToolRegistry();
+    for (const [name, tool] of this.tools) {
+      if (predicate(name)) {
+        filtered.register(tool);
+      }
+    }
+    return filtered;
+  }
+
   getNativeToolDefinitions(): LLMToolDefinition[] {
     return this.getAll().map((tool) => ({
       name: tool.name,
