@@ -150,7 +150,7 @@ export const BANNER_DATA: BannerCardData[] = [
 	{
 		id: "cli-info-windows-v1",
 		icon: "terminal",
-		title: "Cline CLI Info",
+		title: "MitraH CLI Info",
 		platforms: ["windows"] satisfies BannerCardData["platforms"],
 		description:
 			"Available for macOS and Linux. Coming soon to other platforms. [Learn more](https://docs.cline.bot/cline-cli/overview)",

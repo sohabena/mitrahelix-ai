@@ -109,55 +109,57 @@ export function convertToOpenAIResponsesInput(
 			// For assistant messages, we must ensure reasoning items are IMMEDIATELY followed
 			// by their corresponding message or function_call. Process the entire assistant
 			// turn and ensure proper pairing.
+
+			// Phase 1: Merge reasoning data from redacted_thinking and thinking blocks per call_id.
+			// The API requires exactly ONE reasoning item per ID with both encrypted_content and summary.
+			const mergedReasoning = new Map<string, { encrypted_content?: any; summary: any[] }>()
+			for (const part of m.content) {
+				if (part.type === "redacted_thinking" && part.call_id && part.call_id.length > 0) {
+					const existing = mergedReasoning.get(part.call_id) || { summary: [] }
+					if (part.data) {
+						existing.encrypted_content = part.data
+					}
+					mergedReasoning.set(part.call_id, existing)
+				}
+				if (part.type === "thinking" && part.call_id && part.call_id.length > 0) {
+					const existing = mergedReasoning.get(part.call_id) || { summary: [] }
+					const hasSummaryContent = part.summary && Array.isArray(part.summary) && part.summary.length > 0
+					const hasThinkingContent = part.thinking && part.thinking.trim().length > 0
+					if (hasSummaryContent) {
+						existing.summary = part.summary as any[]
+					} else if (hasThinkingContent) {
+						existing.summary = [{ type: "summary_text", text: part.thinking }]
+					}
+					mergedReasoning.set(part.call_id, existing)
+				}
+			}
+			const emittedReasoningIds = new Set<string>()
+
+			// Phase 2: Build assistant items in order, emitting one merged reasoning item per call_id.
 			const assistantItems: any[] = []
 
 			for (const part of m.content) {
 				switch (part.type) {
 					case "thinking":
-						// Only include reasoning item if it has actual content (thinking text or summary)
-						// Empty reasoning items cause API errors: "Item 'rs_...' of type 'reasoning' was provided without its required following item"
-						const hasThinkingContent = part.thinking && part.thinking.trim().length > 0
-						const hasSummaryContent = part.summary && Array.isArray(part.summary) && part.summary.length > 0
-
-						if (part.call_id && part.call_id.length > 0 && (hasThinkingContent || hasSummaryContent)) {
-							// Use summary if available, otherwise use thinking text
-							let summary: any[] = []
-							if (hasSummaryContent) {
-								// part.summary is already in the correct format from OpenAI Responses API
-								summary = part.summary as any[]
-							} else if (hasThinkingContent) {
-								// Convert thinking text to summary format
-								summary = [
-									{
-										type: "summary_text",
-										text: part.thinking,
-									},
-								]
-							}
-
-							assistantItems.push({
-								id: part.call_id,
-								type: "reasoning",
-								summary,
-							} as ResponseReasoningItem)
+					case "redacted_thinking": {
+						const callId = part.call_id
+						if (!callId || callId.length === 0 || emittedReasoningIds.has(callId)) {
+							break
 						}
-						break
-					case "redacted_thinking":
-						// Include reasoning item with encrypted content if it has a call_id
-						// Even if data is missing, we need to maintain the reasoning-function_call pairing
-						if (part.call_id && part.call_id.length > 0) {
-							const reasoningItem: any = {
-								id: part.call_id,
-								type: "reasoning",
-								summary: [],
-							}
-							// Only include encrypted_content if data exists
-							if (part.data) {
-								reasoningItem.encrypted_content = part.data
-							}
-							assistantItems.push(reasoningItem as ResponseReasoningItem)
+						emittedReasoningIds.add(callId)
+
+						const merged = mergedReasoning.get(callId)
+						const reasoningItem: any = {
+							id: callId,
+							type: "reasoning",
+							summary: merged?.summary ?? [],
 						}
+						if (merged?.encrypted_content) {
+							reasoningItem.encrypted_content = merged.encrypted_content
+						}
+						assistantItems.push(reasoningItem as ResponseReasoningItem)
 						break
+					}
 					case "text":
 						// Message ID goes at the message level, not in the content
 						// The reasoning item and message can have different IDs - they just need to be adjacent

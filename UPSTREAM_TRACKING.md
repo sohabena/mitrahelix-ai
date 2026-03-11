@@ -50,7 +50,7 @@ git commit -m "merge: sync with upstream Cline <commit-hash>"
 
 ## Modified Files (diff from upstream)
 
-All changes below are **Tier 1 rebrand only** -- user-facing display strings "Cline" replaced with "MitraHelix". No internal identifiers, file names, command IDs, or code logic was changed.
+All changes below are **Tier 1 rebrand only** -- user-facing display strings "Cline" replaced with "MitraH" (agent persona) or "Mitra Helix AI" (product name). No internal identifiers, file names, command IDs, or code logic was changed.
 
 ### Extension Manifest and Registry
 
@@ -151,6 +151,65 @@ All changes below are **Tier 1 rebrand only** -- user-facing display strings "Cl
 | `webview-ui/src/components/account/AccountView.tsx` | Environment label |
 | `webview-ui/src/components/account/AccountWelcomeView.tsx` | Sign-up button text |
 | `webview-ui/src/components/worktrees/WorktreesView.tsx` | 2 worktree descriptions |
+
+### System Prompts (Agent Persona)
+
+| File | Change Description |
+|------|--------------------|
+| `src/core/prompts/system-prompt/components/agent_role.ts` | "You are Cline" -> "You are MitraH" |
+| `src/core/prompts/system-prompt/components/feedback.ts` | User-facing help text: "Cline" -> "MitraH" |
+| `src/core/prompts/system-prompt/variants/hermes/overrides.ts` | Agent role: "You are Cline" -> "You are MitraH" |
+| `src/core/prompts/system-prompt/variants/xs/overrides.ts` | Agent role: "You are Cline" -> "You are MitraH" |
+| `src/core/prompts/system-prompt/variants/native-gpt-5-1/overrides.ts` | Agent role: "You are Cline" -> "You are MitraH" |
+| `src/core/prompts/system-prompt/variants/gemini-3/overrides.ts` | Agent role: "You are Cline" -> "You are MitraH" |
+| `src/core/prompts/system-prompt/variants/devstral/overrides.ts` | Agent role: "You are Cline" -> "You are MitraH" |
+| `src/core/prompts/system-prompt-legacy/families/next-gen-models/gpt-5.ts` | Agent role + feedback text |
+| `src/core/prompts/commands.ts` | Rule file prompts, bug report prompt: "Cline" -> "MitraH" |
+
+### Tool Handlers (Notification Strings)
+
+| File | Change Description |
+|------|--------------------|
+| `src/core/task/tools/handlers/WebSearchToolHandler.ts` | "Cline wants to search" -> "MitraH wants to search" |
+| `src/core/task/tools/handlers/ApplyPatchHandler.ts` | "Cline wants to edit" -> "MitraH wants to edit" |
+| `src/core/task/tools/handlers/CondenseHandler.ts` | "Cline wants to condense" -> "MitraH wants to condense" |
+| `src/core/task/tools/handlers/ReportBugHandler.ts` | "Cline wants to create" -> "MitraH wants to create" |
+| `src/core/task/tools/handlers/NewTaskHandler.ts` | "Cline wants to start" -> "MitraH wants to start" |
+| `src/core/task/tools/handlers/WriteToFileToolHandler.ts` | "Cline tried/wants" -> "MitraH tried/wants" |
+| `src/core/task/tools/handlers/ReadFileToolHandler.ts` | "Cline wants to read" -> "MitraH wants to read" |
+| `src/core/task/tools/handlers/WebFetchToolHandler.ts` | "Cline web tools/wants" -> "MitraH web tools/wants" |
+| `src/core/task/tools/handlers/ExecuteCommandToolHandler.ts` | "Cline wants to execute" -> "MitraH wants to execute" |
+| `src/core/task/tools/handlers/BrowserToolHandler.ts` | "Cline wants to use a browser" -> "MitraH wants to use a browser" |
+| `src/core/task/tools/handlers/ListFilesToolHandler.ts` | "Cline wants to view" -> "MitraH wants to view" |
+| `src/core/task/tools/handlers/SubagentToolHandler.ts` | "Cline wants to use" -> "MitraH wants to use" |
+| `src/core/task/tools/handlers/AccessMcpResourceHandler.ts` | "Cline wants to access" -> "MitraH wants to access" |
+| `src/core/task/tools/handlers/SearchFilesToolHandler.ts` | "Cline wants to search files" -> "MitraH wants to search files" |
+| `src/core/task/tools/handlers/AskFollowupQuestionToolHandler.ts` | "Cline has a question" -> "MitraH has a question" |
+| `src/core/task/tools/handlers/UseMcpToolHandler.ts` | "Cline tried/wants to use" -> "MitraH tried/wants to use" |
+| `src/core/task/tools/handlers/AttemptCompletionHandler.ts` | "Cline wants to execute" -> "MitraH wants to execute" |
+| `src/core/task/tools/handlers/ListCodeDefinitionNamesToolHandler.ts` | "Cline wants to analyze" -> "MitraH wants to analyze" |
+
+### Task Engine and Core
+
+| File | Change Description |
+|------|--------------------|
+| `src/core/task/index.ts` | "Cline instance aborted", error messages, troubleshooting text |
+| `src/core/task/tools/subagent/AgentConfigLoader.ts` | Agents config path: ~/Documents/Cline/ -> ~/Documents/MitraH/ |
+| `src/core/controller/task/explainChangesShared.ts` | Explainer system prompt persona |
+| `src/core/controller/checkpoints/checkpointRestore.ts` | Logger message |
+| `src/core/controller/models/refreshClineModels.ts` | Logger/error messages |
+| `src/core/controller/models/refreshClineRecommendedModels.ts` | Logger/error messages |
+| `src/core/api/providers/cline.ts` | API error messages |
+| `src/core/api/providers/vscode-lm.ts` | Language Model API error/logger messages, permission justification |
+| `src/core/api/transform/vscode-lm-format.ts` | Logger messages |
+| `src/integrations/terminal/standalone/StandaloneTerminalManager.ts` | Terminal tab name |
+| `src/integrations/checkpoints/CheckpointGitOperations.ts` | Git checkpoint author name |
+| `src/hosts/vscode/review/VscodeCommentReviewController.ts` | Review controller label |
+| `src/shared/cline/banner.ts` | CLI banner title |
+| `src/common.ts` | Version notification messages |
+| `src/config.ts` | Logger message |
+| `src/services/temp/ClineTempManager.ts` | Logger message |
+| `src/utils/cli-detector.ts` | Added MitraH version detection alongside Cline |
 
 ## What Was NOT Changed (preserved for merge compatibility)
 

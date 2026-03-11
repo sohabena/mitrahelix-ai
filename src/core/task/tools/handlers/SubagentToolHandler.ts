@@ -128,8 +128,8 @@ export class UseSubagentsToolHandler implements IFullyManagedTool {
 		} else {
 			showNotificationForApproval(
 				prompts.length === 1
-					? `Cline wants to use ${configuredSubagentName ? `the '${configuredSubagentName}' subagent` : "a subagent"}`
-					: `Cline wants to use ${prompts.length} subagents`,
+					? `MitraH wants to use ${configuredSubagentName ? `the '${configuredSubagentName}' subagent` : "a subagent"}`
+					: `MitraH wants to use ${prompts.length} subagents`,
 				config.autoApprovalSettings.enableNotifications,
 			)
 			const didApprove = await ToolResultUtils.askApprovalAndPushFeedback("use_subagents", approvalBody, config)
