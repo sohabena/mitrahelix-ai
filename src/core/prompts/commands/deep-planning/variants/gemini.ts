@@ -53,7 +53,7 @@ Perform your research without commentary or narration. Execute commands and read
 </important>
 
 ### Required Research Activities
-You must first use the read_file tool to examine several source files, configuration files, and documentation to better inform subsequent research steps. You should only use read_file to prepare for more granular searching. Use this tool to determine the language(s) used in the codebase, and to identify the domain(s) relevant to the user's request.
+You must first use the read_file tool to examine several source files, configuration files, and documentation to better inform subsequent research steps. You should only use read_file to prepare for more granular searching. Use this tool to determine the language(s) used in the codebase, and to identify the domain(s) relevant to the user's request. For MuleSoft projects, identify RAML/OAS, DataWeave, Mule config XML, and project structure. MuleSoft domains include: API design, integration flows, connectors, transformations.
 
 You must then use terminal commands to gather information about the codebase structure and patterns relevant to the user's request. All terminal output must be piped to cat for visibility.
 You will tailor these commands to explore and identify key functions, classes, methods, types, and variables that are directly, or indirectly related to the task.

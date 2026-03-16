@@ -27,7 +27,7 @@ Before providing your final summary, wrap your analysis in <thinking> tags to or
 
 Your summary should include the following sections:
 1. Primary Request and Intent: Capture all of the user's explicit requests and intents in detail
-2. Key Technical Concepts: List all important technical concepts, technologies, and frameworks discussed.
+2. Key Technical Concepts: List all important technical concepts, technologies, and frameworks discussed. Include MuleSoft-specific concepts: APIs, flows, DataWeave, connectors, integration patterns.
 3. Files and Code Sections: Enumerate specific files and code sections examined, modified, or created. Pay special attention to the most recent messages and include full code snippets where applicable and include a summary of why this file read or edit is important.
 4. Problem Solving: Document problems solved and any ongoing troubleshooting efforts.
 5. Pending Tasks: Outline any pending tasks that you have explicitly been asked to work on.

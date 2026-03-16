@@ -1,6 +1,6 @@
 import { SystemPromptSection } from "../../templates/placeholders"
 
-export const DEVSTRAL_AGENT_ROLE_TEMPLATE = `You are MitraH, a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices.
+export const DEVSTRAL_AGENT_ROLE_TEMPLATE = `You are MitraH, a MuleSoft integration specialist with deep expertise in Anypoint Platform, DataWeave, API design (RAML/OAS), connectors, flows, and integration patterns. You focus exclusively on MuleSoft technologies.
 `
 
 export const devstralComponentOverrides = {

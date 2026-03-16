@@ -152,11 +152,31 @@ All changes below are **Tier 1 rebrand only** -- user-facing display strings "Cl
 | `webview-ui/src/components/account/AccountWelcomeView.tsx` | Sign-up button text |
 | `webview-ui/src/components/worktrees/WorktreesView.tsx` | 2 worktree descriptions |
 
+### MuleSoft Persona (Domain Focus)
+
+MitraH is configured as a **MuleSoft-only** agent. The following files contain MuleSoft-specific persona overrides (in addition to Tier 1 rebrand):
+
+- All agent role definitions (agent_role.ts, variant overrides: hermes, devstral, gemini-3, xs, native-gpt-5-1)
+- `src/core/prompts/system-prompt-legacy/families/local-models/compact-system-prompt.ts`
+- `src/core/controller/task/explainChangesShared.ts`
+- `src/core/prompts/system-prompt/components/capabilities.ts` (MuleSoft context)
+- `src/core/prompts/system-prompt/components/objective.ts` (MuleSoft context)
+- `src/core/prompts/commands.ts` (new_task/condense MuleSoft context)
+- Deep-planning variants: gpt51.ts, gemini3.ts, anthropic.ts
+- `src/core/task/tools/subagent/SubagentBuilder.ts`
+- `docs/features/memory-bank.mdx`
+- `evals/benchmarks/tool-precision/replace-in-file/prompts/claude4SystemPrompt-06-06-25.ts`
+- `src/core/prompts/system-prompt/README.md` (documentation example)
+- `src/core/prompts/system-prompt/__tests__/PromptBuilder.test.ts` (test fixtures)
+- `src/core/prompts/commands/deep-planning/variants/gemini.ts`, `generic.ts`
+- `src/core/prompts/contextManagement.ts`
+- `src/core/prompts/system-prompt-legacy/families/next-gen-models/gpt-5.ts` (new_task Key Technical Concepts)
+
 ### System Prompts (Agent Persona)
 
 | File | Change Description |
 |------|--------------------|
-| `src/core/prompts/system-prompt/components/agent_role.ts` | "You are Cline" -> "You are MitraH" |
+| `src/core/prompts/system-prompt/components/agent_role.ts` | "You are Cline" -> "You are MitraH", software engineer -> MuleSoft integration specialist |
 | `src/core/prompts/system-prompt/components/feedback.ts` | User-facing help text: "Cline" -> "MitraH" |
 | `src/core/prompts/system-prompt/variants/hermes/overrides.ts` | Agent role: "You are Cline" -> "You are MitraH" |
 | `src/core/prompts/system-prompt/variants/xs/overrides.ts` | Agent role: "You are Cline" -> "You are MitraH" |
