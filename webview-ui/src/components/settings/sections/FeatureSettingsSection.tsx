@@ -36,7 +36,7 @@ const agentFeatures: FeatureToggle[] = [
 	{
 		id: "subagents",
 		label: "Subagents",
-		description: "Let MitraH run focused subagents in parallel to explore the codebase for you.",
+		description: "Let Cline run focused subagents in parallel to explore the codebase for you.",
 		stateKey: "subagentsEnabled",
 		settingKey: "subagentsEnabled",
 	},
@@ -95,7 +95,7 @@ const editorFeatures: FeatureToggle[] = [
 	},
 	{
 		id: "cline-web-tools",
-		label: "MitraH Web Tools",
+		label: "Cline Web Tools",
 		description: "Access web browsing and search capabilities",
 		stateKey: "clineWebToolsEnabled",
 		settingKey: "clineWebToolsEnabled",
@@ -103,7 +103,7 @@ const editorFeatures: FeatureToggle[] = [
 	{
 		id: "worktrees",
 		label: "Worktrees",
-		description: "Enables git worktree management for running parallel MitraH tasks.",
+		description: "Enables git worktree management for running parallel Cline tasks.",
 		stateKey: "worktreesEnabled",
 		settingKey: "worktreesEnabled",
 	},

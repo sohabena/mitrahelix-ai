@@ -1,6 +1,7 @@
 import { ensureCacheDirectoryExists, GlobalFileNames } from "@core/storage/disk"
 import type { ModelInfo } from "@shared/api"
 import { fileExistsAtPath } from "@utils/fs"
+import { GEMINI_FLASH_MAX_OUTPUT_TOKENS, isGeminiFlashModel } from "@utils/model-utils"
 import axios from "axios"
 import cloneDeep from "clone-deep"
 import fs from "fs/promises"
@@ -87,10 +88,10 @@ async function fetchRawClineModels(): Promise<ClineRawModelInfo[]> {
 	const response = await axios.get(`${apiBaseUrl}/api/v1/ai/cline/models`, getAxiosSettings())
 
 	if (!Array.isArray(response.data?.data)) {
-		throw new Error("Invalid response data when fetching MitraH models")
+		throw new Error("Invalid response data when fetching Cline models")
 	}
 
-	Logger.log("MitraH models source: MitraH API")
+	Logger.log("Cline models source: Cline API")
 	return response.data.data as ClineRawModelInfo[]
 }
 
@@ -240,6 +241,13 @@ async function fetchAndCacheClineModels(): Promise<Record<string, ModelInfo>> {
 					break
 			}
 
+			if (isGeminiFlashModel(rawModel.id)) {
+				modelInfo.maxTokens = Math.min(
+					modelInfo.maxTokens || GEMINI_FLASH_MAX_OUTPUT_TOKENS,
+					GEMINI_FLASH_MAX_OUTPUT_TOKENS,
+				)
+			}
+
 			models[rawModel.id] = modelInfo
 
 			// Add custom :1m model variant for Sonnet models
@@ -273,13 +281,13 @@ async function fetchAndCacheClineModels(): Promise<Record<string, ModelInfo>> {
 			}
 		}
 		if (Object.keys(models).length === 0) {
-			throw new Error("No MitraH models returned from API")
+			throw new Error("No Cline models returned from API")
 		}
 		// Save models and cache them in memory
 		await fs.writeFile(clineModelsFilePath, JSON.stringify(models))
-		Logger.log("MitraH models fetched and saved")
+		Logger.log("Cline models fetched and saved")
 	} catch (error) {
-		Logger.error("Error fetching MitraH models:", error)
+		Logger.error("Error fetching Cline models:", error)
 
 		// If we failed to fetch models, try to read cached models from disk
 		try {
@@ -287,10 +295,10 @@ async function fetchAndCacheClineModels(): Promise<Record<string, ModelInfo>> {
 			if (fileExists) {
 				const fileContents = await fs.readFile(clineModelsFilePath, "utf8")
 				models = JSON.parse(fileContents)
-				Logger.log("Loaded MitraH models from cache")
+				Logger.log("Loaded Cline models from cache")
 			}
 		} catch (cacheError) {
-			Logger.error("Error reading MitraH models from cache:", cacheError)
+			Logger.error("Error reading Cline models from cache:", cacheError)
 		}
 	}
 
@@ -315,7 +323,7 @@ export async function readClineModelsFromCache(): Promise<Record<string, ModelIn
 			return JSON.parse(fileContents)
 		}
 	} catch (error) {
-		Logger.error("Error reading MitraH models from cache:", error)
+		Logger.error("Error reading Cline models from cache:", error)
 	}
 	return undefined
 }

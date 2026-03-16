@@ -177,7 +177,7 @@ export class AttemptCompletionHandler implements IToolHandler, IPartialBlockHand
 			} else {
 				// Manual approval flow - need to ask for approval
 				showNotificationForApproval(
-					`MitraH wants to execute a command: ${command}`,
+					`Cline wants to execute a command: ${command}`,
 					config.autoApprovalSettings.enableNotifications,
 				)
 

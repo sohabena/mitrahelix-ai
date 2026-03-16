@@ -57,7 +57,7 @@ export class WebSearchToolHandler implements IFullyManagedTool {
 			const clineWebToolsEnabled = config.services.stateManager.getGlobalSettingsKey("clineWebToolsEnabled")
 			const featureFlagEnabled = featureFlagsService.getWebtoolsEnabled()
 			if (provider !== "cline" || !clineWebToolsEnabled || !featureFlagEnabled) {
-				return formatResponse.toolError("MitraH web tools are currently disabled.")
+				return formatResponse.toolError("Cline web tools are currently disabled.")
 			}
 
 			// Validate required parameters
@@ -103,7 +103,7 @@ export class WebSearchToolHandler implements IFullyManagedTool {
 			} else {
 				// Manual approval flow
 				showNotificationForApproval(
-					`MitraH wants to search for: ${query}`,
+					`Cline wants to search for: ${query}`,
 					config.autoApprovalSettings.enableNotifications,
 				)
 				await config.callbacks.removeLastPartialMessageIfExistsWithType("say", "tool")

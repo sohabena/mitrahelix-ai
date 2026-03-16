@@ -89,7 +89,7 @@ async function showVersionUpdateAnnouncement(stateManager: StateManager) {
 	// Perform post-update actions if necessary
 	try {
 		if (!previousVersion || currentVersion !== previousVersion) {
-			Logger.log(`MitraH version changed: ${previousVersion} -> ${currentVersion}. First run or update detected.`)
+			Logger.log(`Cline version changed: ${previousVersion} -> ${currentVersion}. First run or update detected.`)
 
 			// Check if there's a new announcement to show
 			const lastShownAnnouncementId = stateManager.getGlobalStateKey("lastShownAnnouncementId")
@@ -98,8 +98,8 @@ async function showVersionUpdateAnnouncement(stateManager: StateManager) {
 			if (lastShownAnnouncementId !== latestAnnouncementId) {
 				// Show notification when there's a new announcement (major/minor updates or fresh installs)
 				const message = previousVersion
-					? `Mitra Helix AI has been updated to v${currentVersion}`
-					: `Welcome to Mitra Helix AI v${currentVersion}`
+					? `Cline has been updated to v${currentVersion}`
+					: `Welcome to Cline v${currentVersion}`
 				HostProvider.window.showMessage({
 					type: ShowMessageType.INFORMATION,
 					message,

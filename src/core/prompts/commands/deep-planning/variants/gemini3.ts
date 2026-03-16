@@ -59,7 +59,7 @@ Perform your research without commentary or narration. Execute commands and read
 ## STEP 1: Silent Read Investigation
 
 ### Required Research Activities
-You MUST first use the read_file tool to examine several source files, configuration files, and documentation to better inform subsequent research steps. You should only use read_file to prepare for more granular searching. Use this step to get the big picture, then you will use the next step for granular details by searching using terminal commands. Use this tool to determine the language(s) used in the codebase, and to identify the domain(s) relevant to the user's request. For MuleSoft projects, identify RAML/OAS, DataWeave, Mule config XML, and project structure. MuleSoft domains include: API design, integration flows, connectors, transformations.
+You MUST first use the read_file tool to examine several source files, configuration files, and documentation to better inform subsequent research steps. You should only use read_file to prepare for more granular searching. Use this step to get the big picture, then you will use the next step for granular details by searching using terminal commands. Use this tool to determine the language(s) used in the codebase, and to identify the domain(s) relevant to the user's request.
 
 
 ## STEP 2: Silent Terminal Investigation

@@ -1,8 +1,8 @@
 {
 	"name": "mitra-helix",
 	"displayName": "Mitra Helix AI",
-	"description": "MitraH - AI-powered autonomous coding agent by Mitra Helix AI. Create/edit files, run commands, use the browser, and more with your permission every step of the way.",
-	"version": "3.71.0",
+	"description": "Mitra Helix AI - MuleSoft-focused autonomous coding agent in your IDE.",
+	"version": "3.72.0",
 	"icon": "assets/icons/icon.png",
 	"workspaces": [
 		".",
@@ -12,14 +12,15 @@
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "Mitra Helix AI"
+		"name": "MitraHelix"
 	},
 	"license": "Apache-2.0",
-	"publisher": "sohabena",
+	"publisher": "mitrahelix",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/sohabena/mitrahelix-ai"
 	},
+	"homepage": "https://github.com/sohabena/mitrahelix-ai",
 	"categories": [
 		"AI",
 		"Chat",
@@ -29,16 +30,17 @@
 		"Testing"
 	],
 	"keywords": [
-		"mitrah",
-		"mitra-helix-ai",
-		"ai",
-		"coding-agent",
-		"autonomous",
-		"mcp",
+		"cline",
 		"claude",
+		"dev",
+		"mcp",
 		"openrouter",
+		"coding",
+		"agent",
+		"autonomous",
 		"chatgpt",
 		"sonnet",
+		"ai",
 		"llama"
 	],
 	"activationEvents": [
@@ -61,7 +63,7 @@
 		"walkthroughs": [
 			{
 				"id": "ClineWalkthrough",
-				"title": "Meet MitraH, your new coding partner",
+				"title": "Meet Mitra Helix AI, your MuleSoft coding partner",
 				"description": "MitraH codes like a developer because it thinks like one. Here are 5 ways to put it to work:",
 				"steps": [
 					{
@@ -74,7 +76,7 @@
 					},
 					{
 						"id": "learn",
-						"title": "Let MitraH Learn Your Codebase",
+						"title": "Let Cline Learn Your Codebase",
 						"description": "Point MitraH to your project. It builds understanding to make smart, context-aware changes.",
 						"media": {
 							"markdown": "walkthrough/step2.md"
@@ -83,7 +85,7 @@
 					{
 						"id": "advanced-features",
 						"title": "Always Use the Best AI Models",
-						"description": "MitraH empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
+						"description": "Cline empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
 						"media": {
 							"markdown": "walkthrough/step3.md"
 						}
@@ -99,7 +101,7 @@
 					{
 						"id": "getting-started",
 						"title": "You're Always in Control",
-						"description": "Review MitraH's plans and diffs. Approve changes before they happen. No surprises.",
+						"description": "Review Cline's plans and diffs. Approve changes before they happen. No surprises.",
 						"media": {
 							"markdown": "walkthrough/step5.md"
 						},
@@ -114,7 +116,7 @@
 			"activitybar": [
 				{
 					"id": "claude-dev-ActivityBar",
-					"title": "Mitra Helix AI",
+					"title": "Cline",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
@@ -158,90 +160,90 @@
 			{
 				"command": "cline.dev.createTestTasks",
 				"title": "Create Test Tasks",
-				"category": "MitraH",
+				"category": "Cline",
 				"when": "cline.isDevMode"
 			},
 			{
 				"command": "cline.dev.expireMcpOAuthTokens",
 				"title": "Expire MCP OAuth Tokens (for testing)",
-				"category": "MitraH",
+				"category": "Cline",
 				"when": "cline.isDevMode"
 			},
 			{
 				"command": "cline.addToChat",
-				"title": "Add to MitraH",
-				"category": "MitraH"
+				"title": "Add to Cline",
+				"category": "Cline"
 			},
 			{
 				"command": "cline.addTerminalOutputToChat",
-				"title": "Add to MitraH",
-				"category": "MitraH"
+				"title": "Add to Cline",
+				"category": "Cline"
 			},
 			{
 				"command": "cline.focusChatInput",
 				"title": "Jump to Chat Input",
-				"category": "MitraH"
+				"category": "Cline"
 			},
 			{
 				"command": "cline.generateGitCommitMessage",
-				"title": "Generate Commit Message with MitraH",
-				"category": "MitraH",
+				"title": "Generate Commit Message with Cline",
+				"category": "Cline",
 				"icon": "$(cline-icon)"
 			},
 			{
 				"command": "cline.abortGitCommitMessage",
-				"title": "Generate Commit Message with MitraH - Stop",
-				"category": "MitraH",
+				"title": "Generate Commit Message with Cline - Stop",
+				"category": "Cline",
 				"icon": "$(debug-stop)"
 			},
 			{
 				"command": "cline.explainCode",
-				"title": "Explain with MitraH",
-				"category": "MitraH"
+				"title": "Explain with Cline",
+				"category": "Cline"
 			},
 			{
 				"command": "cline.improveCode",
-				"title": "Improve with MitraH",
-				"category": "MitraH"
+				"title": "Improve with Cline",
+				"category": "Cline"
 			},
 			{
 				"command": "cline.jupyterGenerateCell",
-				"title": "Generate Jupyter Cell with MitraH",
-				"category": "MitraH",
+				"title": "Generate Jupyter Cell with Cline",
+				"category": "Cline",
 				"icon": "$(sparkle)"
 			},
 			{
 				"command": "cline.jupyterExplainCell",
-				"title": "Explain Jupyter Cell with MitraH",
-				"category": "MitraH",
+				"title": "Explain Jupyter Cell with Cline",
+				"category": "Cline",
 				"icon": "$(question)"
 			},
 			{
 				"command": "cline.jupyterImproveCell",
-				"title": "Improve Jupyter Cell with MitraH",
-				"category": "MitraH",
+				"title": "Improve Jupyter Cell with Cline",
+				"category": "Cline",
 				"icon": "$(lightbulb)"
 			},
 			{
 				"command": "cline.openWalkthrough",
 				"title": "Open Walkthrough",
-				"category": "MitraH"
+				"category": "Cline"
 			},
 			{
 				"command": "cline.reconstructTaskHistory",
 				"title": "Reconstruct Task History",
-				"category": "MitraH"
+				"category": "Cline"
 			},
 			{
 				"command": "cline.reviewComment.reply",
 				"title": "Reply",
-				"category": "MitraH",
+				"category": "Cline",
 				"enablement": "!commentIsEmpty"
 			},
 			{
 				"command": "cline.reviewComment.addToChat",
-				"title": "Add to MitraH Chat",
-				"category": "MitraH",
+				"title": "Add to Cline Chat",
+				"category": "Cline",
 				"icon": "$(link-external)"
 			}
 		],
@@ -374,7 +376,7 @@
 			]
 		},
 		"configuration": {
-			"title": "Mitra Helix AI",
+			"title": "Cline",
 			"properties": {}
 		}
 	},
@@ -426,6 +428,7 @@
 		"test:e2e:build": "vsce package --allow-package-secrets sendgrid --out dist/e2e.vsix",
 		"test:e2e": "playwright install && npm run test:e2e:build && node src/test/e2e/utils/build.mjs && playwright test",
 		"test:e2e:optimal": "npm run test:e2e:build && node src/test/e2e/utils/build.mjs && playwright test",
+		"test:e2e:cli:tui": "cd tests/e2e/cli && tui-test",
 		"test:e2e:ui": "npx tsx scripts/interactive-playwright.ts",
 		"install:all": "npm install && cd webview-ui && npm install",
 		"dev:webview": "cd webview-ui && npm run dev",
@@ -458,6 +461,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.14",
 		"@bufbuild/buf": "^1.54.0",
+		"@microsoft/tui-test": "0.0.1",
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/chai": "^5.0.1",
 		"@types/clone-deep": "^4.0.4",

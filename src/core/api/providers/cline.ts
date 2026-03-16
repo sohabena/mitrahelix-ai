@@ -28,6 +28,7 @@ interface ClineHandlerOptions extends CommonApiHandlerOptions {
 	openRouterModelInfo?: ModelInfo
 	clineAccountId?: string
 	clineApiKey?: string
+	enableParallelToolCalling?: boolean
 }
 
 const CLINE_FREE_MODELS = ["minimax/minimax-m2.5", "kwaipilot/kat-coder-pro", "z-ai/glm-5"]
@@ -121,6 +122,7 @@ export class ClineHandler implements ApiHandler {
 				this.options.thinkingBudgetTokens,
 				this.options.openRouterProviderSorting,
 				tools,
+				this.options.enableParallelToolCalling,
 			)
 
 			const toolCallProcessor = new ToolCallProcessor()
@@ -130,10 +132,10 @@ export class ClineHandler implements ApiHandler {
 				// openrouter returns an error object instead of the openai sdk throwing an error
 				if ("error" in chunk) {
 					const error = chunk.error as OpenRouterErrorResponse["error"]
-					Logger.error(`MitraH API Error: ${error?.code} - ${error?.message}`)
+					Logger.error(`Cline API Error: ${error?.code} - ${error?.message}`)
 					// Include metadata in the error message if available
 					const metadataStr = error.metadata ? `\nMetadata: ${JSON.stringify(error.metadata, null, 2)}` : ""
-					throw new Error(`MitraH API Error ${error.code}: ${error.message}${metadataStr}`)
+					throw new Error(`Cline API Error ${error.code}: ${error.message}${metadataStr}`)
 				}
 
 				if (!this.lastGenerationId && chunk.id) {
@@ -147,10 +149,10 @@ export class ClineHandler implements ApiHandler {
 					const choiceWithError = choice as any
 					if (choiceWithError.error) {
 						const error = choiceWithError.error
-						Logger.error(`MitraH Mid-Stream Error: ${error.code || error.type || "Unknown"} - ${error.message}`)
-						throw new Error(`MitraH Mid-Stream Error: ${error.code || error.type || "Unknown"} - ${error.message}`)
+						Logger.error(`Cline Mid-Stream Error: ${error.code || error.type || "Unknown"} - ${error.message}`)
+						throw new Error(`Cline Mid-Stream Error: ${error.code || error.type || "Unknown"} - ${error.message}`)
 					}
-					throw new Error("MitraH Mid-Stream Error: Stream terminated with error status but no error details provided")
+					throw new Error("Cline Mid-Stream Error: Stream terminated with error status but no error details provided")
 				}
 
 				const delta = choice?.delta
@@ -226,14 +228,14 @@ export class ClineHandler implements ApiHandler {
 
 			// Fallback to generation endpoint if usage chunk not returned
 			if (!didOutputUsage) {
-				Logger.warn("MitraH API did not return usage chunk, fetching from generation endpoint")
+				Logger.warn("Cline API did not return usage chunk, fetching from generation endpoint")
 				const apiStreamUsage = await this.getApiStreamUsage()
 				if (apiStreamUsage) {
 					yield apiStreamUsage
 				}
 			}
 		} catch (error) {
-			Logger.error("MitraH API Error:", error)
+			Logger.error("Cline API Error:", error)
 			throw error
 		}
 	}

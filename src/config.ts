@@ -66,7 +66,7 @@ class ClineEndpoint {
 		const endpointsConfig = await ClineEndpoint.loadEndpointsFile()
 		if (endpointsConfig) {
 			ClineEndpoint._instance.onPremiseConfig = endpointsConfig
-			Logger.log("MitraH running in self-hosted mode with custom endpoints")
+			Logger.log("Cline running in self-hosted mode with custom endpoints")
 		}
 
 		ClineEndpoint._initialized = true

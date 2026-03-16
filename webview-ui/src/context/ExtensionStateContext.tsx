@@ -375,9 +375,14 @@ export const ExtensionStateContextProvider: React.FC<{
 									: prevState.autoApprovalSettings,
 							}
 
-							// MitraH: skip welcome/onboarding screen, go straight to chat
-							setShowWelcome(false)
-							setOnboardingModels(undefined)
+							// Update welcome screen state based on API configuration if welcome view not in progress
+							if (!newState.welcomeViewCompleted && !showWelcome) {
+								setShowWelcome(true)
+								setOnboardingModels(newState.onboardingModels)
+							} else if (newState.welcomeViewCompleted) {
+								setShowWelcome(false)
+								setOnboardingModels(undefined)
+							}
 
 							setDidHydrateState(true)
 

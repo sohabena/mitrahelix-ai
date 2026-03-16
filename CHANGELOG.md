@@ -1,10 +1,26 @@
 # Changelog
 
-## Mitra Helix AI (based on Cline v3.71.0)
+## [3.72.0]
 
-- Rebranded from Cline to Mitra Helix AI (agent name: MitraH)
-- All existing Cline features preserved
-- See UPSTREAM_TRACKING.md for differences from upstream
+### Added
+
+- Added Anthropic Opus 4.6 fast mode variants
+
+### Fixed
+
+- Resolved native tool placeholder interpolation in prompts
+- Gemini: capped Flash output tokens to 8192 across providers
+- Fixed Windows unit test path normalization
+- Fixed flaky hooks tests on Windows
+- Bedrock: handle thinking and redacted_thinking blocks correctly in message conversion and streaming
+- Prevent crash when `list_files` or `list_code_definition_names` receives a file path
+
+### Changed
+
+- Updated Jupyter Notebook GIFs
+- Markdown image loading now requires user consent
+- Added `.github/copilot-instructions.md` for coding agents
+- Hooks: reintroduced feature toggle
 
 ## [3.71.0]
 

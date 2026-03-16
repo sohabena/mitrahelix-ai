@@ -5,8 +5,9 @@ This document tracks all differences between Mitra Helix AI (agent name: MitraH)
 ## Base
 
 - **Upstream:** https://github.com/cline/cline
-- **Base commit:** `6129caa` (Cline v3.71.0)
+- **Base commit:** `9824d8d` (Cline main, post v3.72.0)
 - **Import date:** 2026-03-10
+- **Last merge:** 2026-03-16
 - **Product name:** Mitra Helix AI
 - **Agent name:** MitraH
 - **Rebrand strategy:** Tier 1 (merge-friendly) -- only user-facing strings changed, all internal identifiers identical to Cline

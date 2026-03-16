@@ -317,12 +317,7 @@ class ReasoningHandler {
 			return null
 		}
 
-		// Always return a thinking block when an ID exists — the Responses API requires
-		// the reasoning item to be present whenever a function_call references it, even
-		// if the summary/content is empty (e.g. GPT-5.1 with encrypted-only reasoning).
-		const hasId = !!this.pendingReasoning.id
-		const hasContent = !!(this.pendingReasoning.summary.length || this.pendingReasoning.content)
-		if (!hasId && !hasContent) {
+		if (!this.pendingReasoning.summary.length && !this.pendingReasoning.content) {
 			return null
 		}
 

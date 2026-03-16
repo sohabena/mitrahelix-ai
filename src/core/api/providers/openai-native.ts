@@ -523,12 +523,12 @@ export class OpenAiNativeHandler implements ApiHandler {
 						},
 					}
 				}
-				if (item.type === "reasoning" && item.id) {
+				if (item.type === "reasoning" && item.encrypted_content && item.id) {
 					yield {
 						type: "reasoning",
 						id: item.id,
 						reasoning: "",
-						redacted_data: item.encrypted_content || undefined,
+						redacted_data: item.encrypted_content,
 					}
 				}
 			}
@@ -557,7 +557,6 @@ export class OpenAiNativeHandler implements ApiHandler {
 						id: item.id,
 						details: item.summary,
 						reasoning: "",
-						redacted_data: item.encrypted_content || undefined,
 					}
 				}
 			}

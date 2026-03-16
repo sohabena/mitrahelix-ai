@@ -30,7 +30,7 @@ export class VscodeCommentReviewController extends CommentReviewController imple
 	constructor() {
 		super()
 		// Create the comment controller
-		this.commentController = vscode.comments.createCommentController("cline-ai-review", "MitraH AI Review")
+		this.commentController = vscode.comments.createCommentController("cline-ai-review", "Cline AI Review")
 
 		// Configure options for the reply input
 		this.commentController.options = {

@@ -134,9 +134,9 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 
 			await config.callbacks.say(
 				"error",
-				`MitraH tried to use write_to_file for '${relPath}' without value for required parameter 'content'. ${
+				`Cline tried to use write_to_file for '${relPath}' without value for required parameter 'content'. ${
 					config.taskState.consecutiveMistakeCount >= 2
-						? "This has happened multiple times — MitraH will try a different approach."
+						? "This has happened multiple times — Cline will try a different approach."
 						: "Retrying..."
 				}`,
 			)
@@ -229,7 +229,7 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 				await setTimeoutPromise(3_500)
 			} else {
 				// Manual approval flow with detailed feedback handling
-				const notificationMessage = `MitraH wants to ${fileExists ? "edit" : "create"} ${getWorkspaceBasename(relPath, "WriteToFile.notification")}`
+				const notificationMessage = `Cline wants to ${fileExists ? "edit" : "create"} ${getWorkspaceBasename(relPath, "WriteToFile.notification")}`
 
 				// Show notification
 				showNotificationForApproval(notificationMessage, config.autoApprovalSettings.enableNotifications)

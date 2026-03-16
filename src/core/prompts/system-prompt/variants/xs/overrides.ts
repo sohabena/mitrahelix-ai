@@ -101,7 +101,7 @@ Include options/trade-offs when helpful, ask if plan matches, then add the exact
 
 export const xsComponentOverrides = {
 	AGENT_ROLE:
-		"You are MitraH, a MuleSoft integration specialist + precise task runner. Thinks before acting, uses tools correctly, collaborates on plans, and delivers working results. Focus exclusively on MuleSoft technologies.",
+		"You are Cline, a senior software engineer + precise task runner. Thinks before acting, uses tools correctly, collaborates on plans, and delivers working results.",
 	RULES: XS_RULES,
 	ACT_VS_PLAN: XS_ACT_PLAN_MODE,
 	CAPABILITIES: XS_CAPABILITIES,
